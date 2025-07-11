@@ -125,11 +125,11 @@ const Footer = () => {
             <ul className="space-y-4">
               <li className="flex items-start">
                 <FaMapMarkerAlt className="mt-1 mr-3 text-blue-500" />
-                <span>123 Healthcare St, Medical City, MC 12345</span>
+                <span>123 Zocure Tower Vrindavan, Mathura 281406</span>
               </li>
               <li className="flex items-center">
                 <FaPhoneAlt className="mr-3 text-blue-500" />
-                <span>+1 (555) 123-4567</span>
+                <span>+91 834-123-4567</span>
               </li>
               <li className="flex items-center">
                 <FaEnvelope className="mr-3 text-blue-500" />
@@ -142,8 +142,8 @@ const Footer = () => {
         {/* Copyright */}
         <div className="border-t border-gray-800 mt-12 pt-8 text-center">
           <p>
-            &copy; 2023 Zocure. All rights reserved. Designed with ❤️ for better
-            healthcare.
+            &copy; 2023 Zocure. All rights reserved. Designed with ❤️ by Prince
+            Chauhan for better healthcare.
           </p>
         </div>
       </div>

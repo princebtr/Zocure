@@ -1,25 +1,43 @@
 // src/pages/Login.jsx
 import { useState } from "react";
-import axios from "../utils/axiosInstance";
+import { useAuth } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
-import { FaHeartbeat, FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import {
+  FaHeartbeat,
+  FaUser,
+  FaLock,
+  FaEye,
+  FaEyeSlash,
+  FaCrown,
+  FaUserMd,
+} from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const [form, setForm] = useState({ email: "", password: "", role: "user" });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
-      const res = await axios.post("/auth/login", form);
-      localStorage.setItem("token", res.data.token);
-      toast.success("Login Successful");
+      const result = await login(form.email, form.password, "user");
+      if (result.success) {
+        toast.success("Login Successful");
+        navigate("/");
+      } else {
+        toast.error(result.error || "Login Failed");
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Login Failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -64,31 +82,6 @@ export default function Login() {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Role Selector */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-blue-500">
-                <FaUser />
-              </div>
-              <select
-                name="role"
-                onChange={handleChange}
-                className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-              >
-                <option value="user">User Account</option>
-                <option value="doctor">Doctor Account</option>
-                <option value="admin">Admin Account</option>
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                <svg
-                  className="w-4 h-4 fill-current text-gray-500"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                </svg>
-              </div>
-            </div>
-
             {/* Email Field */}
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-blue-500">
@@ -205,24 +198,26 @@ export default function Login() {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white text-gray-500">
-                  Don't have an account?
+                  Other login options
                 </span>
               </div>
             </div>
 
             <div className="mt-6 grid grid-cols-1 gap-3">
-              <a
-                href="#"
-                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              <button
+                onClick={() => navigate("/admin/login")}
+                className="w-full flex justify-center items-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
               >
-                Create new account
-              </a>
-              <a
-                href="#"
-                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                <FaCrown className="mr-2 text-blue-500" />
+                Login as Admin
+              </button>
+              <button
+                onClick={() => navigate("/doctor/login")}
+                className="w-full flex justify-center items-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
               >
-                Continue as guest
-              </a>
+                <FaUserMd className="mr-2 text-blue-500" />
+                Login as Doctor
+              </button>
             </div>
           </div>
 

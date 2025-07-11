@@ -5,13 +5,19 @@ require("dotenv").config();
 
 const app = express();
 app.use(cors());
-app.use(express.json());
 
-// Routes
-app.use("/api/auth", require("./routes/authRoutes"));
+// Only use express.json() for routes that expect JSON
+app.use(express.json());
+app.use("/api/auth", express.json(), require("./routes/authRoutes"));
+app.use("/api/doctors", express.json(), require("./routes/doctorRoutes"));
+app.use(
+  "/api/appointments",
+  express.json(),
+  require("./routes/appointmentRoutes")
+);
+
+// Do NOT use express.json() for admin routes (uses multer for file upload)
 app.use("/api/admin", require("./routes/adminRoutes"));
-app.use("/api/doctors", require("./routes/doctorRoutes"));
-app.use("/api/appointments", require("./routes/appointmentRoutes"));
 
 // DB Connection
 const PORT = process.env.PORT || 5000;
