@@ -278,6 +278,7 @@ const BookAppointment = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const [step, setStep] = useState(1); // 1: select, 2: payment
 
   useEffect(() => {
     fetchDoctorDetails();
@@ -324,14 +325,22 @@ const BookAppointment = () => {
 
   const handleSlotSelection = (slot) => {
     setSelectedSlot(slot);
+    setStep(2);
     setShowPayment(true);
+  };
+
+  const handleBackToSelection = () => {
+    setShowPayment(false);
+    setStep(1);
+    setSelectedSlot(null);
   };
 
   const handlePaymentSuccess = () => {
     setShowPayment(false);
     setSelectedSlot(null);
     setSelectedDate("");
-    navigate("/dashboard");
+    setStep(3); // Success step
+    setTimeout(() => navigate("/dashboard"), 2000);
   };
 
   const handlePaymentCancel = () => {
@@ -436,255 +445,389 @@ const BookAppointment = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50 py-8 pt-24">
       <style>{customCalendarStyles}</style>
-
       <div className="container mx-auto px-4 max-w-5xl">
-        <div className="mb-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center text-blue-600 hover:text-blue-800 font-medium"
-          >
-            <FaArrowLeft className="mr-2" />
-            Back to Doctors
-          </button>
-        </div>
-
-        {!showPayment ? (
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6">
-              <h1 className="text-3xl font-bold">Book Appointment</h1>
-              <p className="mt-2 text-blue-100">
-                Select date and time for your consultation
-              </p>
+        {/* Step Indicator */}
+        <div className="flex items-center justify-center mb-8">
+          <div className="flex items-center">
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg ${
+                step >= 1
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-400"
+              }`}
+            >
+              1
             </div>
-
-            <div className="p-6">
-              {/* Doctor Card */}
-              <div className="flex flex-col md:flex-row items-start mb-8 p-6 bg-blue-50 rounded-xl border border-blue-100">
-                <div className="flex-shrink-0 mr-6 mb-4 md:mb-0">
-                  {doctor.image ? (
-                    <img
-                      src={doctor.image}
-                      alt={`Dr. ${doctor.name || doctor.userId?.name}`}
-                      className="w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover border-2 border-blue-200"
-                    />
-                  ) : (
-                    <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center">
-                      <FaUserMd className="text-white text-2xl" />
-                    </div>
-                  )}
+            <span
+              className={`mx-2 font-semibold ${
+                step === 1 ? "text-blue-600" : "text-gray-400"
+              }`}
+            >
+              Select Slot
+            </span>
+          </div>
+          <div className="w-8 h-1 bg-gray-200 mx-2 rounded-full" />
+          <div className="flex items-center">
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg ${
+                step >= 2
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-400"
+              }`}
+            >
+              2
+            </div>
+            <span
+              className={`mx-2 font-semibold ${
+                step === 2 ? "text-blue-600" : "text-gray-400"
+              }`}
+            >
+              Payment
+            </span>
+          </div>
+        </div>
+        {/* Success Animation */}
+        {step === 3 && (
+          <div className="flex flex-col items-center justify-center py-24 animate-fade-in">
+            <div className="bg-green-100 rounded-full p-6 mb-6">
+              <svg
+                className="w-16 h-16 text-green-500"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <h2 className="text-3xl font-bold text-green-700 mb-2">
+              Appointment Booked!
+            </h2>
+            <p className="text-gray-600 mb-4">
+              You will be redirected to your dashboard shortly.
+            </p>
+          </div>
+        )}
+        {step !== 3 && (
+          <>
+            <div className="mb-8">
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center text-blue-600 hover:text-blue-800 font-medium"
+              >
+                <FaArrowLeft className="mr-2" />
+                Back to Doctors
+              </button>
+            </div>
+            {!showPayment ? (
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6">
+                  <h1 className="text-3xl font-bold">Book Appointment</h1>
+                  <p className="mt-2 text-blue-100">
+                    Select date and time for your consultation
+                  </p>
                 </div>
-
-                <div className="flex-1">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between">
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-800">
-                        Dr.{" "}
-                        {doctor.name || doctor.userId?.name || "Unknown Doctor"}
-                      </h2>
-                      <div className="flex items-center mt-1">
-                        <FaStethoscope className="text-blue-500 mr-2" />
-                        <span className="text-blue-600 font-medium">
-                          {doctor.specialization || "General Medicine"}
-                        </span>
+                <div className="p-6">
+                  {/* Doctor Card */}
+                  <div className="flex flex-col md:flex-row items-start mb-8 p-6 bg-blue-50 rounded-xl border border-blue-100 shadow-md">
+                    <div className="flex-shrink-0 mr-6 mb-4 md:mb-0">
+                      {doctor.image ? (
+                        <img
+                          src={doctor.image}
+                          alt={`Dr. ${doctor.name || doctor.userId?.name}`}
+                          className="w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover border-2 border-blue-200"
+                        />
+                      ) : (
+                        <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center">
+                          <FaUserMd className="text-white text-2xl" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between">
+                        <div>
+                          <h2 className="text-2xl font-bold text-gray-800">
+                            Dr.{" "}
+                            {doctor.name ||
+                              doctor.userId?.name ||
+                              "Unknown Doctor"}
+                          </h2>
+                          <div className="flex items-center mt-1">
+                            <FaStethoscope className="text-blue-500 mr-2" />
+                            <span className="text-blue-600 font-medium">
+                              {doctor.specialization || "General Medicine"}
+                            </span>
+                            {doctor.rating && (
+                              <span className="ml-4 flex items-center">
+                                <span className="text-yellow-400 font-bold mr-1">
+                                  {doctor.rating.toFixed(1)}
+                                </span>
+                                <svg
+                                  className="w-5 h-5 text-yellow-400"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.05 9.394c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.967z" />
+                                </svg>
+                              </span>
+                            )}
+                            {doctor.rating && doctor.rating >= 4.5 && (
+                              <span className="ml-2 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                                Top Rated
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="mt-4 md:mt-0 flex items-center">
+                          <FaMoneyBillWave className="text-blue-500 mr-2" />
+                          <span className="text-xl font-bold text-blue-600">
+                            ${doctor.fees || 0}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex items-start">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 text-blue-500 mr-2 mt-0.5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          <p className="text-gray-600">
+                            Experience:{" "}
+                            <span className="font-medium">
+                              {doctor.experience || 0} years
+                            </span>
+                          </p>
+                        </div>
+                        <div className="flex items-start">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 text-blue-500 mr-2 mt-0.5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          <p className="text-gray-600">
+                            Location:{" "}
+                            <span className="font-medium">
+                              Medical Center, Suite 302
+                            </span>
+                          </p>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="mt-4 md:mt-0 flex items-center">
-                      <FaMoneyBillWave className="text-blue-500 mr-2" />
-                      <span className="text-xl font-bold text-blue-600">
-                        ${doctor.fees || 0}
+                  </div>
+                  {/* Booking Interface */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Calendar Section */}
+                    <div className="bg-white p-6 rounded-xl border border-gray-200">
+                      <div className="flex items-center mb-6">
+                        <FaCalendarAlt className="text-blue-600 text-xl mr-3" />
+                        <h3 className="text-xl font-semibold">Select Date</h3>
+                      </div>
+                      <Calendar
+                        onChange={setSelectedDate}
+                        value={selectedDate}
+                        minDate={new Date()}
+                        maxDate={
+                          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                        }
+                        tileDisabled={({ date }) => {
+                          const day = date.toLocaleDateString("en-US", {
+                            weekday: "long",
+                          });
+                          return ![
+                            "Monday",
+                            "Tuesday",
+                            "Wednesday",
+                            "Thursday",
+                            "Friday",
+                          ].includes(day);
+                        }}
+                      />
+                      {selectedDate && (
+                        <div className="mt-4 p-4 bg-blue-50 rounded-lg text-center">
+                          <p className="text-blue-600 font-medium">
+                            Selected:{" "}
+                            {selectedDate.toLocaleDateString("en-US", {
+                              weekday: "long",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    {/* Time Slots */}
+                    <div className="bg-white p-6 rounded-xl border border-gray-200">
+                      <div className="flex items-center mb-6">
+                        <FaClock className="text-blue-600 text-xl mr-3" />
+                        <h3 className="text-xl font-semibold">
+                          Available Time Slots
+                        </h3>
+                      </div>
+                      {!selectedDate ? (
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-16 w-16 text-gray-400 mb-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          <p className="text-gray-500 text-lg">
+                            Select a date to see available time slots
+                          </p>
+                          <p className="text-gray-400 mt-2">
+                            Choose a date from the calendar to proceed
+                          </p>
+                        </div>
+                      ) : loadingSlots ? (
+                        <div className="flex justify-center items-center py-12">
+                          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+                        </div>
+                      ) : availableSlots.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-16 w-16 text-gray-400 mb-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          <p className="text-gray-500 text-lg">
+                            No slots available for this date
+                          </p>
+                          <p className="text-gray-400 mt-2">
+                            Please select a different date
+                          </p>
+                          <button
+                            onClick={() => setSelectedDate("")}
+                            className="mt-4 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition"
+                          >
+                            Change Date
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          {availableSlots.map((slot) => (
+                            <button
+                              key={
+                                slot._id || `${slot.startTime}-${slot.endTime}`
+                              }
+                              className={`p-4 rounded-xl text-center transition-all transform hover:-translate-y-0.5 ${
+                                selectedSlot === slot
+                                  ? "bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg"
+                                  : "bg-blue-50 border border-blue-200 text-blue-600 hover:bg-blue-100 hover:border-blue-300"
+                              }`}
+                              onClick={() => handleSlotSelection(slot)}
+                            >
+                              <div className="font-bold text-lg">
+                                {slot.startTime}
+                              </div>
+                              <div className="text-sm mt-1">
+                                to {slot.endTime}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {/* Next Button for slot selection */}
+                  {/* <div className="flex justify-end mt-8">
+                    <button
+                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-xl font-semibold shadow-md hover:from-blue-700 hover:to-indigo-800 transition-all"
+                      onClick={() => setShowPayment(true)}
+                      disabled={!selectedSlot}
+                    >
+                      Next: Payment
+                    </button>
+                  </div> */}
+                </div>
+              </div>
+            ) : (
+              <Elements stripe={stripePromise}>
+                {/* Payment Step Summary Card */}
+                <div className="mb-8 animate-fade-in">
+                  <div className="bg-white rounded-xl shadow-lg border border-blue-100 p-6 flex flex-col md:flex-row items-center justify-between">
+                    <div className="flex items-center mb-4 md:mb-0">
+                      <FaCalendarAlt className="text-blue-600 text-2xl mr-3" />
+                      <div>
+                        <div className="font-semibold text-gray-800">
+                          {selectedDate &&
+                            selectedDate.toLocaleDateString("en-US", {
+                              weekday: "long",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                        </div>
+                        <div className="text-gray-500 text-sm">
+                          {selectedSlot &&
+                            `${selectedSlot.startTime} - ${selectedSlot.endTime}`}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      <FaUserMd className="text-blue-500 mr-2" />
+                      <span className="font-medium text-blue-700">
+                        Dr. {doctor.name || doctor.userId?.name}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <FaMoneyBillWave className="text-green-500 mr-2" />
+                      <span className="font-bold text-green-700 text-lg">
+                        ${doctor.fees}
+                      </span>
+                    </div>
+                    <div className="flex items-center ml-4">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200">
+                        <FaCheckCircle className="mr-1" /> Secure Payment
                       </span>
                     </div>
                   </div>
-
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-blue-500 mr-2 mt-0.5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <p className="text-gray-600">
-                        Experience:{" "}
-                        <span className="font-medium">
-                          {doctor.experience || 0} years
-                        </span>
-                      </p>
-                    </div>
-
-                    <div className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-blue-500 mr-2 mt-0.5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <p className="text-gray-600">
-                        Location:{" "}
-                        <span className="font-medium">
-                          Medical Center, Suite 302
-                        </span>
-                      </p>
-                    </div>
-                  </div>
                 </div>
-              </div>
-
-              {/* Booking Interface */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Calendar Section */}
-                <div className="bg-white p-6 rounded-xl border border-gray-200">
-                  <div className="flex items-center mb-6">
-                    <FaCalendarAlt className="text-blue-600 text-xl mr-3" />
-                    <h3 className="text-xl font-semibold">Select Date</h3>
-                  </div>
-
-                  <Calendar
-                    onChange={setSelectedDate}
-                    value={selectedDate}
-                    minDate={new Date()}
-                    maxDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
-                    tileDisabled={({ date }) => {
-                      const day = date.toLocaleDateString("en-US", {
-                        weekday: "long",
-                      });
-                      return ![
-                        "Monday",
-                        "Tuesday",
-                        "Wednesday",
-                        "Thursday",
-                        "Friday",
-                      ].includes(day);
-                    }}
-                  />
-
-                  {selectedDate && (
-                    <div className="mt-4 p-4 bg-blue-50 rounded-lg text-center">
-                      <p className="text-blue-600 font-medium">
-                        Selected:{" "}
-                        {selectedDate.toLocaleDateString("en-US", {
-                          weekday: "long",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Time Slots */}
-                <div className="bg-white p-6 rounded-xl border border-gray-200">
-                  <div className="flex items-center mb-6">
-                    <FaClock className="text-blue-600 text-xl mr-3" />
-                    <h3 className="text-xl font-semibold">
-                      Available Time Slots
-                    </h3>
-                  </div>
-
-                  {!selectedDate ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-16 w-16 text-gray-400 mb-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      <p className="text-gray-500 text-lg">
-                        Select a date to see available time slots
-                      </p>
-                      <p className="text-gray-400 mt-2">
-                        Choose a date from the calendar to proceed
-                      </p>
-                    </div>
-                  ) : loadingSlots ? (
-                    <div className="flex justify-center items-center py-12">
-                      <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
-                    </div>
-                  ) : availableSlots.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-16 w-16 text-gray-400 mb-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      <p className="text-gray-500 text-lg">
-                        No slots available for this date
-                      </p>
-                      <p className="text-gray-400 mt-2">
-                        Please select a different date
-                      </p>
-                      <button
-                        onClick={() => setSelectedDate("")}
-                        className="mt-4 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition"
-                      >
-                        Change Date
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {availableSlots.map((slot) => (
-                        <button
-                          key={slot._id || `${slot.startTime}-${slot.endTime}`}
-                          className={`p-4 rounded-xl text-center transition-all transform hover:-translate-y-0.5 ${
-                            selectedSlot === slot
-                              ? "bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg"
-                              : "bg-blue-50 border border-blue-200 text-blue-600 hover:bg-blue-100 hover:border-blue-300"
-                          }`}
-                          onClick={() => handleSlotSelection(slot)}
-                        >
-                          <div className="font-bold text-lg">
-                            {slot.startTime}
-                          </div>
-                          <div className="text-sm mt-1">to {slot.endTime}</div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <Elements stripe={stripePromise}>
-            <CheckoutForm
-              doctor={doctor}
-              selectedSlot={selectedSlot}
-              selectedDate={selectedDate}
-              onSuccess={handlePaymentSuccess}
-              onCancel={handlePaymentCancel}
-            />
-          </Elements>
+                <CheckoutForm
+                  doctor={doctor}
+                  selectedSlot={selectedSlot}
+                  selectedDate={selectedDate}
+                  onSuccess={handlePaymentSuccess}
+                  onCancel={handleBackToSelection}
+                />
+              </Elements>
+            )}
+          </>
         )}
       </div>
     </div>
