@@ -1,7 +1,19 @@
 import React, { useState } from "react";
 import axios from "../../utils/axiosInstance";
 import { toast } from "react-hot-toast";
-import { FaUserMd, FaUpload, FaImage } from "react-icons/fa";
+import {
+  FaUserMd,
+  FaUpload,
+  FaImage,
+  FaUser,
+  FaEnvelope,
+  FaLock,
+  FaStethoscope,
+  FaClock,
+  FaDollarSign,
+  FaPlus,
+  FaTimes,
+} from "react-icons/fa";
 
 const AddDoctor = () => {
   const [formData, setFormData] = useState({
@@ -130,19 +142,50 @@ const AddDoctor = () => {
     }
   };
 
+  const clearForm = () => {
+    setFormData({
+      name: "",
+      email: "",
+      password: "",
+      specialization: "",
+      experience: "",
+      fees: "",
+      image: null,
+    });
+    setImagePreview(null);
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center mb-6">
-        <FaUserMd className="text-blue-500 text-2xl mr-3" />
-        <h2 className="text-2xl font-semibold text-gray-800">Add New Doctor</h2>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="p-3 bg-blue-100 rounded-full">
+            <FaUserMd className="text-blue-600 text-xl" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Add New Doctor</h2>
+            <p className="text-gray-600">
+              Register a new doctor to the platform
+            </p>
+          </div>
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Basic Information */}
-          <div className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Basic Information Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-center space-x-2 mb-6">
+            <FaUser className="text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">
+              Basic Information
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FaUser className="inline mr-2 text-gray-400" />
                 Full Name *
               </label>
               <input
@@ -150,13 +193,15 @@ const AddDoctor = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="Enter doctor's full name"
                 required
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FaEnvelope className="inline mr-2 text-gray-400" />
                 Email Address *
               </label>
               <input
@@ -164,13 +209,15 @@ const AddDoctor = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="doctor@example.com"
                 required
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FaLock className="inline mr-2 text-gray-400" />
                 Password *
               </label>
               <input
@@ -178,24 +225,35 @@ const AddDoctor = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="Minimum 6 characters"
                 required
                 minLength={6}
               />
             </div>
           </div>
+        </div>
 
-          {/* Professional Information */}
-          <div className="space-y-4">
+        {/* Professional Information Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-center space-x-2 mb-6">
+            <FaStethoscope className="text-green-600" />
+            <h3 className="text-lg font-semibold text-gray-900">
+              Professional Information
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FaStethoscope className="inline mr-2 text-gray-400" />
                 Specialization *
               </label>
               <select
                 name="specialization"
                 value={formData.specialization}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                 required
               >
                 <option value="">Select Specialization</option>
@@ -209,6 +267,7 @@ const AddDoctor = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FaClock className="inline mr-2 text-gray-400" />
                 Years of Experience *
               </label>
               <input
@@ -216,7 +275,8 @@ const AddDoctor = () => {
                 name="experience"
                 value={formData.experience}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="0"
                 required
                 min="0"
                 max="50"
@@ -225,6 +285,7 @@ const AddDoctor = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FaDollarSign className="inline mr-2 text-gray-400" />
                 Consultation Fees (USD) *
               </label>
               <input
@@ -232,7 +293,8 @@ const AddDoctor = () => {
                 name="fees"
                 value={formData.fees}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="0.00"
                 required
                 min="0"
                 step="0.01"
@@ -241,18 +303,27 @@ const AddDoctor = () => {
           </div>
         </div>
 
-        {/* Image Upload */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Profile Image
-          </label>
+        {/* Image Upload Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-center space-x-2 mb-6">
+            <FaImage className="text-purple-600" />
+            <h3 className="text-lg font-semibold text-gray-900">
+              Profile Image
+            </h3>
+          </div>
+
           <div className="space-y-4">
             <div className="flex items-center space-x-4">
-              <label className="flex items-center px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                <FaUpload className="mr-2 text-blue-500" />
-                <span className="text-sm font-medium text-gray-700">
-                  Choose Image
-                </span>
+              <label className="flex items-center px-6 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors">
+                <FaUpload className="mr-3 text-blue-500 text-lg" />
+                <div>
+                  <span className="text-sm font-medium text-gray-700">
+                    Choose Image
+                  </span>
+                  <p className="text-xs text-gray-500">
+                    JPG, PNG, GIF up to 5MB
+                  </p>
+                </div>
                 <input
                   type="file"
                   accept="image/*"
@@ -261,18 +332,30 @@ const AddDoctor = () => {
                 />
               </label>
               {formData.image && (
-                <span className="text-sm text-green-600">
-                  ✓ {formData.image.name}
-                </span>
+                <div className="flex items-center space-x-2 px-3 py-2 bg-green-100 text-green-700 rounded-lg">
+                  <span className="text-sm font-medium">
+                    ✓ {formData.image.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData({ ...formData, image: null });
+                      setImagePreview(null);
+                    }}
+                    className="text-green-600 hover:text-green-800"
+                  >
+                    <FaTimes className="text-sm" />
+                  </button>
+                </div>
               )}
             </div>
 
             {imagePreview && (
               <div className="mt-4">
-                <p className="text-sm font-medium text-gray-700 mb-2">
+                <p className="text-sm font-medium text-gray-700 mb-3">
                   Preview:
                 </p>
-                <div className="w-32 h-32 rounded-lg overflow-hidden border border-gray-300">
+                <div className="w-32 h-32 rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm">
                   <img
                     src={imagePreview}
                     alt="Preview"
@@ -281,40 +364,37 @@ const AddDoctor = () => {
                 </div>
               </div>
             )}
-
-            <p className="text-xs text-gray-500">
-              Supported formats: JPG, PNG, GIF. Max size: 5MB.
-            </p>
           </div>
         </div>
 
-        <div className="flex justify-end space-x-4">
+        {/* Action Buttons */}
+        <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
           <button
             type="button"
-            onClick={() => {
-              setFormData({
-                name: "",
-                email: "",
-                password: "",
-                specialization: "",
-                experience: "",
-                fees: "",
-                image: null,
-              });
-              setImagePreview(null);
-            }}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            onClick={clearForm}
+            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
           >
+            <FaTimes className="inline mr-2" />
             Clear Form
           </button>
           <button
             type="submit"
             disabled={isLoading}
-            className={`px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${
+            className={`px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center ${
               isLoading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
-            {isLoading ? "Adding Doctor..." : "Add Doctor"}
+            {isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Adding Doctor...
+              </>
+            ) : (
+              <>
+                <FaPlus className="mr-2" />
+                Add Doctor
+              </>
+            )}
           </button>
         </div>
       </form>

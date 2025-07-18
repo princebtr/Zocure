@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Doctor = require("../models/Doctor");
 const bcrypt = require("bcryptjs");
 const upload = require("../utils/multer");
+const mongoose = require("mongoose");
 
 // Add a new doctor
 exports.addDoctor = async (req, res) => {
@@ -73,6 +74,7 @@ exports.addDoctor = async (req, res) => {
 exports.getAllDoctors = async (req, res) => {
   try {
     const doctors = await Doctor.find().populate("userId", "name email");
+    console.log("Raw doctors from DB:", doctors);
     // Flatten userId fields for frontend compatibility
     const formatted = doctors.map((doc) => ({
       _id: doc._id,
@@ -83,8 +85,10 @@ exports.getAllDoctors = async (req, res) => {
       fees: doc.fees,
       image: doc.image,
     }));
+    console.log("Formatted doctors:", formatted);
     res.status(200).json(formatted);
   } catch (error) {
+    console.error("Error fetching doctors:", error);
     res
       .status(500)
       .json({ message: "Error fetching doctors", error: error.message });
@@ -94,21 +98,36 @@ exports.getAllDoctors = async (req, res) => {
 // Delete a doctor
 exports.deleteDoctor = async (req, res) => {
   try {
-    const { doctorId } = req.params;
+    const { id } = req.params;
+    console.log("Attempting to delete doctor with ID:", id);
+    console.log("Request params:", req.params);
+    console.log("Request URL:", req.url);
 
-    const doctor = await Doctor.findById(doctorId);
+    // Check if ID is valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      console.log("Invalid ObjectId:", id);
+      return res.status(400).json({ message: "Invalid doctor ID format" });
+    }
+
+    const doctor = await Doctor.findById(id);
+    console.log("Found doctor:", doctor);
+
     if (!doctor) {
+      console.log("Doctor not found for ID:", id);
       return res.status(404).json({ message: "Doctor not found" });
     }
 
     // Delete the user account as well
     await User.findByIdAndDelete(doctor.userId);
+    console.log("Deleted user account for doctor");
 
     // Delete the doctor profile
-    await Doctor.findByIdAndDelete(doctorId);
+    await Doctor.findByIdAndDelete(id);
+    console.log("Deleted doctor profile");
 
     res.status(200).json({ message: "Doctor deleted successfully" });
   } catch (error) {
+    console.error("Error deleting doctor:", error);
     res
       .status(500)
       .json({ message: "Error deleting doctor", error: error.message });
