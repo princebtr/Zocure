@@ -1,4 +1,5 @@
 import React from "react";
+import Footer from "../components/Footer";
 import {
   FaHeartbeat,
   FaUsers,
@@ -130,6 +131,7 @@ const AboutPage = () => {
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };

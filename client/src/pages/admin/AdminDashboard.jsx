@@ -14,6 +14,8 @@ import {
   FaClock,
   FaDollarSign,
   FaStar,
+  FaTimes as FaClose,
+  FaBars,
 } from "react-icons/fa";
 import AddDoctor from "./AddDoctor";
 import ManageDoctors from "./ManageDoctors";
@@ -33,6 +35,7 @@ const AdminDashboard = () => {
   const [recentActivity, setRecentActivity] = useState([]);
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     fetchDashboardStats();
@@ -115,297 +118,349 @@ const AdminDashboard = () => {
     </div>
   );
 
+  // Sidebar items for admin
+  const sidebarItems = [
+    {
+      name: "Overview",
+      icon: <FaHome />,
+      key: "overview",
+      color: "text-blue-600",
+    },
+    {
+      name: "Add Doctor",
+      icon: <FaPlusCircle />,
+      key: "addDoctor",
+      color: "text-emerald-600",
+    },
+    {
+      name: "Manage Doctors",
+      icon: <FaUsers />,
+      key: "doctors",
+      color: "text-purple-600",
+    },
+    {
+      name: "Appointments",
+      icon: <FaCalendarCheck />,
+      key: "appointments",
+      color: "text-orange-600",
+    },
+    {
+      name: "Analytics",
+      icon: <FaChartBar />,
+      key: "analytics",
+      color: "text-indigo-600",
+    },
+  ];
+
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Sidebar */}
-      <aside className="w-72 bg-white shadow-xl border-r border-gray-200">
-        <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-indigo-600">
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0 border-r border-gray-200`}
+      >
+        {/* Sidebar Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-indigo-600">
           <div className="flex items-center">
-            <FaCrown className="text-white text-2xl mr-3" />
-            <h1 className="text-xl font-bold text-white">Admin Panel</h1>
+            <div className="bg-white p-2 rounded-xl shadow-lg">
+              <FaCrown className="text-2xl text-yellow-500" />
+            </div>
+            <div className="ml-3">
+              <h1 className="text-3xl font-extrabold tracking-wide text-white">
+                Zocure
+              </h1>
+              <p className="text-blue-100 text-sm">Admin Portal</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="md:hidden text-white hover:text-blue-200 transition-colors"
+          >
+            <FaClose />
+          </button>
+        </div>
+
+        {/* Admin Profile */}
+        <div className="p-6 border-b border-gray-200 bg-gray-50">
+          <div className="flex items-center">
+            <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+              <FaCrown className="text-2xl" />
+            </div>
+            <div className="ml-3">
+              <p className="font-semibold text-gray-800">Admin</p>
+              <p className="text-sm text-gray-600">Administrator</p>
+            </div>
           </div>
         </div>
 
-        <div className="p-6 space-y-2">
-          <button
-            className={`w-full flex items-center space-x-3 p-4 rounded-xl transition-all duration-200 ${
-              activeTab === "overview"
-                ? "bg-blue-50 text-blue-700 border-2 border-blue-200 shadow-sm"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-            }`}
-            onClick={() => setActiveTab("overview")}
-          >
-            <FaHome className="text-lg" />
-            <span className="font-medium">Overview</span>
-          </button>
-
-          <button
-            className={`w-full flex items-center space-x-3 p-4 rounded-xl transition-all duration-200 ${
-              activeTab === "addDoctor"
-                ? "bg-blue-50 text-blue-700 border-2 border-blue-200 shadow-sm"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-            }`}
-            onClick={() => setActiveTab("addDoctor")}
-          >
-            <FaPlusCircle className="text-lg" />
-            <span className="font-medium">Add Doctor</span>
-          </button>
-
-          <button
-            className={`w-full flex items-center space-x-3 p-4 rounded-xl transition-all duration-200 ${
-              activeTab === "doctors"
-                ? "bg-blue-50 text-blue-700 border-2 border-blue-200 shadow-sm"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-            }`}
-            onClick={() => setActiveTab("doctors")}
-          >
-            <FaUsers className="text-lg" />
-            <span className="font-medium">Manage Doctors</span>
-          </button>
-
-          <button
-            className={`w-full flex items-center space-x-3 p-4 rounded-xl transition-all duration-200 ${
-              activeTab === "appointments"
-                ? "bg-blue-50 text-blue-700 border-2 border-blue-200 shadow-sm"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-            }`}
-            onClick={() => setActiveTab("appointments")}
-          >
-            <FaCalendarCheck className="text-lg" />
-            <span className="font-medium">Appointments</span>
-          </button>
-
-          <button
-            className={`w-full flex items-center space-x-3 p-4 rounded-xl transition-all duration-200 ${
-              activeTab === "analytics"
-                ? "bg-blue-50 text-blue-700 border-2 border-blue-200 shadow-sm"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-            }`}
-            onClick={() => setActiveTab("analytics")}
-          >
-            <FaChartBar className="text-lg" />
-            <span className="font-medium">Analytics</span>
-          </button>
-
-          <div className="pt-6 border-t border-gray-200">
+        {/* Navigation */}
+        <nav className="mt-6 px-3">
+          {sidebarItems.map((item, index) => (
             <button
-              className="w-full flex items-center space-x-3 p-4 rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200"
-              onClick={handleLogout}
+              key={index}
+              onClick={() => setActiveTab(item.key)}
+              className={`w-full flex items-center px-4 py-3 mx-2 text-gray-700 hover:bg-gray-100 rounded-xl transition-all duration-200 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white ${
+                activeTab === item.key
+                  ? "bg-blue-50 text-blue-700 border-l-4 border-blue-600 shadow-sm"
+                  : "hover:scale-105"
+              }`}
             >
-              <FaSignOutAlt className="text-lg" />
-              <span className="font-medium">Logout</span>
+              <span className={`mr-4 ${item.color}`}>{item.icon}</span>
+              <span className="font-medium">{item.name}</span>
             </button>
-          </div>
-        </div>
-      </aside>
+          ))}
+        </nav>
 
-      {/* Main content */}
-      <main className="flex-1 p-8">
-        {activeTab === "overview" && (
-          <div className="space-y-6">
-            {/* Header */}
-            <div className="flex justify-between items-center">
+        {/* Logout Button */}
+        <div className="absolute bottom-0 w-full p-4 border-t border-gray-200 bg-gray-50">
+          <button
+            onClick={handleLogout}
+            className="flex items-center w-full px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all duration-200 hover:scale-105"
+          >
+            <FaSignOutAlt className="mr-3" />
+            <span className="font-medium">Logout</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="md:ml-72">
+        {/* Top Header */}
+        <div className="bg-white shadow-sm border-b border-gray-200">
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="md:hidden text-gray-500 hover:text-gray-700 mr-4 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <FaBars />
+              </button>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  Dashboard Overview
+                <h1 className="text-2xl font-bold text-gray-800">
+                  {sidebarItems.find((i) => i.key === activeTab)?.name ||
+                    "Overview"}
                 </h1>
-                <p className="text-gray-600 mt-1">
+                <p className="text-sm text-gray-600">
                   Welcome back! Here's what's happening today.
                 </p>
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="relative">
-                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                />
+              </div>
+              <div className="relative">
+                <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
                   <FaBell className="text-xl" />
                 </button>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
               </div>
             </div>
+          </div>
+        </div>
+        <main className="flex-1 p-8">
+          {activeTab === "overview" && (
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    Dashboard Overview
+                  </h1>
+                  <p className="text-gray-600 mt-1">
+                    Welcome back! Here's what's happening today.
+                  </p>
+                </div>
+                {/* Removed search and notification icons from admin dashboard overview page header */}
+              </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard
-                title="Total Doctors"
-                value={stats.totalDoctors}
-                icon={FaUserMd}
-                color="bg-blue-500"
-              />
-              <StatCard
-                title="Total Appointments"
-                value={stats.totalAppointments}
-                icon={FaCalendarCheck}
-                color="bg-green-500"
-              />
-              <StatCard
-                title="Total Users"
-                value={stats.totalUsers}
-                icon={FaUsers}
-                color="bg-purple-500"
-              />
-              <StatCard
-                title="Total Revenue"
-                value={`$${stats.totalRevenue.toLocaleString()}`}
-                icon={FaDollarSign}
-                color="bg-orange-500"
-              />
-            </div>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard
+                  title="Total Doctors"
+                  value={stats.totalDoctors}
+                  icon={FaUserMd}
+                  color="bg-blue-500"
+                />
+                <StatCard
+                  title="Total Appointments"
+                  value={stats.totalAppointments}
+                  icon={FaCalendarCheck}
+                  color="bg-green-500"
+                />
+                <StatCard
+                  title="Total Users"
+                  value={stats.totalUsers}
+                  icon={FaUsers}
+                  color="bg-purple-500"
+                />
+                <StatCard
+                  title="Total Revenue"
+                  value={`$${stats.totalRevenue.toLocaleString()}`}
+                  icon={FaDollarSign}
+                  color="bg-orange-500"
+                />
+              </div>
 
-            {/* Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Recent Activity */}
-              <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Recent Activity
+              {/* Content Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Recent Activity */}
+                <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Recent Activity
+                    </h3>
+                    <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                      View all
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {recentActivity.map((activity) => (
+                      <ActivityItem key={activity.id} activity={activity} />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                    Quick Actions
                   </h3>
-                  <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                    View all
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  {recentActivity.map((activity) => (
-                    <ActivityItem key={activity.id} activity={activity} />
-                  ))}
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => setActiveTab("addDoctor")}
+                      className="w-full flex items-center space-x-3 p-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                    >
+                      <FaPlusCircle className="text-lg" />
+                      <span className="font-medium">Add New Doctor</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("doctors")}
+                      className="w-full flex items-center space-x-3 p-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
+                    >
+                      <FaUsers className="text-lg" />
+                      <span className="font-medium">Manage Doctors</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("appointments")}
+                      className="w-full flex items-center space-x-3 p-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors"
+                    >
+                      <FaCalendarCheck className="text-lg" />
+                      <span className="font-medium">View Appointments</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Quick Actions */}
+              {/* Performance Metrics */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-6">
-                  Quick Actions
+                  Performance Metrics
                 </h3>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => setActiveTab("addDoctor")}
-                    className="w-full flex items-center space-x-3 p-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
-                  >
-                    <FaPlusCircle className="text-lg" />
-                    <span className="font-medium">Add New Doctor</span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("doctors")}
-                    className="w-full flex items-center space-x-3 p-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
-                  >
-                    <FaUsers className="text-lg" />
-                    <span className="font-medium">Manage Doctors</span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("appointments")}
-                    className="w-full flex items-center space-x-3 p-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors"
-                  >
-                    <FaCalendarCheck className="text-lg" />
-                    <span className="font-medium">View Appointments</span>
-                  </button>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-blue-600 mb-2">
+                      {stats.totalDoctors > 0
+                        ? Math.round(
+                            (stats.totalAppointments / stats.totalDoctors) * 100
+                          )
+                        : 0}
+                      %
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Appointment Rate
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-green-600 mb-2">
+                      {stats.totalDoctors > 0
+                        ? Math.round(stats.totalRevenue / stats.totalDoctors)
+                        : 0}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Avg Revenue per Doctor
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-purple-600 mb-2">
+                      {stats.totalUsers}
+                    </div>
+                    <div className="text-sm text-gray-600">Total Users</div>
+                  </div>
                 </div>
               </div>
             </div>
+          )}
 
-            {/* Performance Metrics */}
+          {activeTab === "addDoctor" && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">
-                Performance Metrics
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600 mb-2">
-                    {stats.totalDoctors > 0
-                      ? Math.round(
-                          (stats.totalAppointments / stats.totalDoctors) * 100
-                        )
-                      : 0}
-                    %
+              <AddDoctor />
+            </div>
+          )}
+
+          {activeTab === "doctors" && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <ManageDoctors />
+            </div>
+          )}
+
+          {activeTab === "appointments" && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <ManageAppointments />
+            </div>
+          )}
+
+          {activeTab === "analytics" && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="text-center py-12">
+                <FaChartBar className="text-6xl text-gray-300 mx-auto mb-6" />
+                <h3 className="text-2xl font-semibold text-gray-700 mb-4">
+                  Analytics Dashboard
+                </h3>
+                <p className="text-gray-500 max-w-md mx-auto mb-8">
+                  Real-time analytics and insights based on your current data.
+                </p>
+
+                {/* Real Analytics Data */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="bg-blue-50 rounded-lg p-6">
+                    <FaChartBar className="text-blue-500 text-3xl mx-auto mb-3" />
+                    <p className="text-lg font-semibold text-blue-700 mb-1">
+                      {stats.totalDoctors} Doctors
+                    </p>
+                    <p className="text-sm text-blue-600">Currently Active</p>
                   </div>
-                  <div className="text-sm text-gray-600">Appointment Rate</div>
+                  <div className="bg-green-50 rounded-lg p-6">
+                    <FaUsers className="text-green-500 text-3xl mx-auto mb-3" />
+                    <p className="text-lg font-semibold text-green-700 mb-1">
+                      {stats.totalAppointments} Appointments
+                    </p>
+                    <p className="text-sm text-green-600">Total Bookings</p>
+                  </div>
+                  <div className="bg-purple-50 rounded-lg p-6">
+                    <FaDollarSign className="text-purple-500 text-3xl mx-auto mb-3" />
+                    <p className="text-lg font-semibold text-purple-700 mb-1">
+                      ${stats.totalRevenue.toLocaleString()}
+                    </p>
+                    <p className="text-sm text-purple-600">Total Revenue</p>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600 mb-2">
-                    {stats.totalDoctors > 0
-                      ? Math.round(stats.totalRevenue / stats.totalDoctors)
-                      : 0}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Avg Revenue per Doctor
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600 mb-2">
-                    {stats.totalUsers}
-                  </div>
-                  <div className="text-sm text-gray-600">Total Users</div>
+
+                <div className="text-sm text-gray-500">
+                  Advanced analytics features coming soon with detailed charts
+                  and reports.
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {activeTab === "addDoctor" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <AddDoctor />
-          </div>
-        )}
-
-        {activeTab === "doctors" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <ManageDoctors />
-          </div>
-        )}
-
-        {activeTab === "appointments" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <ManageAppointments />
-          </div>
-        )}
-
-        {activeTab === "analytics" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <div className="text-center py-12">
-              <FaChartBar className="text-6xl text-gray-300 mx-auto mb-6" />
-              <h3 className="text-2xl font-semibold text-gray-700 mb-4">
-                Analytics Dashboard
-              </h3>
-              <p className="text-gray-500 max-w-md mx-auto mb-8">
-                Real-time analytics and insights based on your current data.
-              </p>
-
-              {/* Real Analytics Data */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-blue-50 rounded-lg p-6">
-                  <FaChartBar className="text-blue-500 text-3xl mx-auto mb-3" />
-                  <p className="text-lg font-semibold text-blue-700 mb-1">
-                    {stats.totalDoctors} Doctors
-                  </p>
-                  <p className="text-sm text-blue-600">Currently Active</p>
-                </div>
-                <div className="bg-green-50 rounded-lg p-6">
-                  <FaUsers className="text-green-500 text-3xl mx-auto mb-3" />
-                  <p className="text-lg font-semibold text-green-700 mb-1">
-                    {stats.totalAppointments} Appointments
-                  </p>
-                  <p className="text-sm text-green-600">Total Bookings</p>
-                </div>
-                <div className="bg-purple-50 rounded-lg p-6">
-                  <FaDollarSign className="text-purple-500 text-3xl mx-auto mb-3" />
-                  <p className="text-lg font-semibold text-purple-700 mb-1">
-                    ${stats.totalRevenue.toLocaleString()}
-                  </p>
-                  <p className="text-sm text-purple-600">Total Revenue</p>
-                </div>
-              </div>
-
-              <div className="text-sm text-gray-500">
-                Advanced analytics features coming soon with detailed charts and
-                reports.
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
+          )}
+        </main>
+      </div>
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Footer from "../components/Footer";
 import {
   FaPhone,
   FaEnvelope,
@@ -181,6 +182,7 @@ const ContactPage = () => {
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };
