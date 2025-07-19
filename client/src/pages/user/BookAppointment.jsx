@@ -356,6 +356,10 @@ const BookAppointment = () => {
     );
   }
 
+  const availableDays = Array.from(
+    new Set((doctor.availableSlots || []).map((s) => s.day))
+  );
+
   // Custom calendar styling
   const customCalendarStyles = `
     .react-calendar {
@@ -632,6 +636,18 @@ const BookAppointment = () => {
                           </p>
                         </div>
                       </div>
+                      {availableDays.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2 mb-2">
+                          {availableDays.map((day) => (
+                            <span
+                              key={day}
+                              className="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200"
+                            >
+                              {day}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                   {/* Booking Interface */}

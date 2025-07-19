@@ -52,6 +52,7 @@ exports.getAllDoctors = async (req, res) => {
       experience: doctor.experience,
       fees: doctor.fees,
       image: doctor.image || null,
+      availableSlots: doctor.availableSlots || [], // Add this line
     }));
 
     res.status(200).json(doctorsWithUserData);

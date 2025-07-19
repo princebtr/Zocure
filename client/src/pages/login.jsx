@@ -190,7 +190,15 @@ export default function Login() {
               )}
             </button>
           </form>
-
+          <div className="mt-6 text-center">
+            <span className="text-gray-600">Don't have an account?</span>
+            <button
+              onClick={() => navigate("/signup")}
+              className="ml-2 inline-block px-4 py-1 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-semibold shadow-md hover:from-blue-700 hover:to-indigo-800 transition-all"
+            >
+              Sign up
+            </button>
+          </div>
           <div className="mt-8">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">

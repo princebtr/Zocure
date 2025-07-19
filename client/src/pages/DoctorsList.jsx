@@ -170,116 +170,136 @@ const DoctorsList = () => {
       {/* Doctors Grid */}
       {filteredDoctors.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredDoctors.map((doctor) => (
-            <div
-              key={doctor._id}
-              className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 overflow-hidden group"
-            >
-              {/* Doctor Header */}
-              <div className="relative p-6 bg-gradient-to-br from-blue-50 to-purple-50 border-b border-gray-100">
-                <div className="flex items-center space-x-4">
-                  {doctor.image ? (
-                    <img
-                      src={doctor.image}
-                      alt={doctor.name}
-                      className="h-16 w-16 rounded-full object-cover border-4 border-white shadow-lg"
-                    />
-                  ) : (
-                    <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center border-4 border-white shadow-lg">
-                      <FaUserMd className="text-white text-2xl" />
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-900 mb-1">
-                      Dr. {doctor.name}
-                    </h3>
-                    <div className="flex items-center space-x-2">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        <FaStethoscope className="mr-1" />
-                        {doctor.specialization}
-                      </span>
-                      {doctor.experience >= 10 && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          <FaAward className="mr-1" />
-                          Expert
+          {filteredDoctors.map((doctor) => {
+            const availableDays = Array.from(
+              new Set((doctor.availableSlots || []).map((s) => s.day))
+            );
+            return (
+              <div
+                key={doctor._id}
+                className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 overflow-hidden group"
+              >
+                {/* Doctor Header */}
+                <div className="relative p-6 bg-gradient-to-br from-blue-50 to-purple-50 border-b border-gray-100">
+                  <div className="flex items-center space-x-4">
+                    {doctor.image ? (
+                      <img
+                        src={doctor.image}
+                        alt={doctor.name}
+                        className="h-16 w-16 rounded-full object-cover border-4 border-white shadow-lg"
+                      />
+                    ) : (
+                      <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center border-4 border-white shadow-lg">
+                        <FaUserMd className="text-white text-2xl" />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900 mb-1">
+                        Dr. {doctor.name}
+                      </h3>
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          <FaStethoscope className="mr-1" />
+                          {doctor.specialization}
                         </span>
+                        {doctor.experience >= 10 && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <FaAward className="mr-1" />
+                            Expert
+                          </span>
+                        )}
+                      </div>
+                      {/* Available Days Badges */}
+                      {availableDays.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {availableDays.map((day) => (
+                            <span
+                              key={day}
+                              className="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200"
+                            >
+                              {day}
+                            </span>
+                          ))}
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
+
+                {/* Doctor Details */}
+                <div className="p-6">
+                  <div className="space-y-4 mb-6">
+                    <div className="flex items-center text-gray-600">
+                      <FaGraduationCap className="text-blue-500 mr-3" />
+                      <span className="text-sm">
+                        {doctor.experience} years of experience
+                      </span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <FaMapMarkerAlt className="text-green-500 mr-3" />
+                      <span className="text-sm">Zocure Tower,Mathura</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <FaClock className="text-purple-500 mr-3" />
+                      <span className="text-sm">
+                        Available for appointments
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <FaStar className="text-yellow-400 mr-1" />
+                        <span className="text-sm font-medium text-gray-700">
+                          {doctor.rating ? doctor.rating.toFixed(1) : "4.8"}
+                        </span>
+                        <span className="text-xs text-gray-500 ml-1">
+                          (120 reviews)
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-2xl font-bold text-blue-600">
+                          ${doctor.fees}
+                        </span>
+                        <span className="text-xs text-gray-500 block">
+                          per consultation
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => handleBookAppointment(doctor._id)}
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center group-hover:shadow-lg"
+                    >
+                      <FaCalendarCheck className="mr-2" />
+                      Book Appointment
+                    </button>
+                    <button className="p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                      <FaHeart className="text-gray-400 hover:text-red-500 transition-colors" />
+                    </button>
+                  </div>
+
+                  {/* Quick Contact */}
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <div className="flex items-center">
+                        <FaPhone className="mr-1" />
+                        <span>+91 9937392375</span>
+                      </div>
+                      <div className="flex items-center">
+                        <FaEnvelope className="mr-1" />
+                        <span>
+                          dr.{doctor.name.toLowerCase().replace(" ", ".")}
+                          @zocure.com
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-
-              {/* Doctor Details */}
-              <div className="p-6">
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-center text-gray-600">
-                    <FaGraduationCap className="text-blue-500 mr-3" />
-                    <span className="text-sm">
-                      {doctor.experience} years of experience
-                    </span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <FaMapMarkerAlt className="text-green-500 mr-3" />
-                    <span className="text-sm">Medical Center, Suite 302</span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <FaClock className="text-purple-500 mr-3" />
-                    <span className="text-sm">Available for appointments</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <FaStar className="text-yellow-400 mr-1" />
-                      <span className="text-sm font-medium text-gray-700">
-                        {doctor.rating ? doctor.rating.toFixed(1) : "4.8"}
-                      </span>
-                      <span className="text-xs text-gray-500 ml-1">
-                        (120 reviews)
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-2xl font-bold text-blue-600">
-                        ${doctor.fees}
-                      </span>
-                      <span className="text-xs text-gray-500 block">
-                        per consultation
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex space-x-3">
-                  <button
-                    onClick={() => handleBookAppointment(doctor._id)}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center group-hover:shadow-lg"
-                  >
-                    <FaCalendarCheck className="mr-2" />
-                    Book Appointment
-                  </button>
-                  <button className="p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-                    <FaHeart className="text-gray-400 hover:text-red-500 transition-colors" />
-                  </button>
-                </div>
-
-                {/* Quick Contact */}
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <div className="flex items-center">
-                      <FaPhone className="mr-1" />
-                      <span>+1 (555) 123-4567</span>
-                    </div>
-                    <div className="flex items-center">
-                      <FaEnvelope className="mr-1" />
-                      <span>
-                        dr.{doctor.name.toLowerCase().replace(" ", ".")}
-                        @zocure.com
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-100">
