@@ -15,7 +15,7 @@ import { toast } from "react-hot-toast";
 import axiosInstance from "../../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
 
-export default function Profile() {
+export default function Profile({ onlyProfileInfo, onlySettings }) {
   const navigate = useNavigate();
   const [user, setUser] = useState({
     name: "",
@@ -150,270 +150,244 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-10 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center mb-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center text-blue-600 hover:text-blue-700 transition-colors mr-4"
-          >
-            <FaArrowLeft className="mr-2" />
-            Back
-          </button>
-          <h1 className="text-3xl font-bold text-gray-800">My Profile</h1>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Profile Information */}
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <div className="flex items-center mb-6">
-              <div className="p-3 bg-blue-100 rounded-full mr-4">
-                <FaUser className="text-blue-600 text-xl" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800">
-                Profile Information
-              </h2>
+    <div className="w-full">
+      {/* Profile Information */}
+      {(!onlySettings || onlyProfileInfo) && (
+        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200 mb-6">
+          <div className="flex items-center mb-6">
+            <div className="p-3 bg-blue-100 rounded-full mr-3">
+              <FaUser className="text-blue-600 text-xl" />
             </div>
-
-            {/* Avatar Section */}
-            <div className="text-center mb-8">
-              <div className="relative inline-block">
-                {avatar ? (
-                  <img
-                    src={avatar}
-                    alt="avatar"
-                    className="w-24 h-24 rounded-full object-cover border-4 border-blue-100"
-                  />
-                ) : (
-                  <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center border-4 border-blue-100">
-                    <FaUser className="text-3xl text-blue-600" />
-                  </div>
-                )}
-                <label className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full cursor-pointer hover:bg-blue-600 transition-colors">
-                  <FaCamera className="text-sm" />
-                  <input
-                    type="file"
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                    accept="image/*"
-                  />
-                </label>
-              </div>
-            </div>
-
-            {/* Profile Form */}
-            <form onSubmit={handleProfileSubmit} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    name="name"
-                    value={user.name}
-                    onChange={handleChange}
-                    placeholder="Enter your full name"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    name="email"
-                    type="email"
-                    value={user.email}
-                    onChange={handleChange}
-                    placeholder="Enter your email"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <FaPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    name="phone"
-                    value={user.phone}
-                    onChange={handleChange}
-                    placeholder="Enter your phone number"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Address
-                </label>
-                <div className="relative">
-                  <FaMapMarkerAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <textarea
-                    name="address"
-                    value={user.address}
-                    onChange={handleChange}
-                    placeholder="Enter your address"
-                    rows="3"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={saving}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                {saving ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <FaSave className="mr-2" />
-                    Save Changes
-                  </>
-                )}
-              </button>
-            </form>
+            <h2 className="text-xl font-bold text-gray-800">
+              Profile Information
+            </h2>
           </div>
-
-          {/* Password Change */}
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <div className="flex items-center mb-6">
-              <div className="p-3 bg-green-100 rounded-full mr-4">
-                <FaLock className="text-green-600 text-xl" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800">
-                Change Password
-              </h2>
-            </div>
-
-            <form onSubmit={handlePasswordSubmit} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Current Password
-                </label>
-                <div className="relative">
-                  <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    name="current"
-                    type={showPasswords.current ? "text" : "password"}
-                    value={password.current}
-                    onChange={(e) =>
-                      setPassword({ ...password, current: e.target.value })
-                    }
-                    placeholder="Enter current password"
-                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => togglePasswordVisibility("current")}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPasswords.current ? <FaEyeSlash /> : <FaEye />}
-                  </button>
+          {/* Avatar Section */}
+          <div className="text-center mb-6">
+            <div className="relative inline-block">
+              {avatar ? (
+                <img
+                  src={avatar}
+                  alt="avatar"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-blue-300 shadow-lg"
+                />
+              ) : (
+                <div className="w-24 h-24 bg-gradient-to-br from-blue-200 to-indigo-200 rounded-full flex items-center justify-center border-4 border-blue-300 shadow-lg">
+                  <FaUser className="text-3xl text-blue-600" />
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  New Password
-                </label>
-                <div className="relative">
-                  <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    name="new"
-                    type={showPasswords.new ? "text" : "password"}
-                    value={password.new}
-                    onChange={(e) =>
-                      setPassword({ ...password, new: e.target.value })
-                    }
-                    placeholder="Enter new password"
-                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => togglePasswordVisibility("new")}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPasswords.new ? <FaEyeSlash /> : <FaEye />}
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm New Password
-                </label>
-                <div className="relative">
-                  <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    name="confirm"
-                    type={showPasswords.confirm ? "text" : "password"}
-                    value={password.confirm}
-                    onChange={(e) =>
-                      setPassword({ ...password, confirm: e.target.value })
-                    }
-                    placeholder="Confirm new password"
-                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => togglePasswordVisibility("confirm")}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPasswords.confirm ? <FaEyeSlash /> : <FaEye />}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={saving}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-lg font-medium hover:from-green-600 hover:to-emerald-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                {saving ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Updating...
-                  </>
-                ) : (
-                  <>
-                    <FaLock className="mr-2" />
-                    Update Password
-                  </>
-                )}
-              </button>
-            </form>
-
-            {/* Password Requirements */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <h4 className="text-sm font-medium text-blue-800 mb-2">
-                Password Requirements:
-              </h4>
-              <ul className="text-xs text-blue-700 space-y-1">
-                <li>• At least 6 characters long</li>
-                <li>• Include uppercase and lowercase letters</li>
-                <li>• Include at least one number</li>
-                <li>• Include at least one special character</li>
-              </ul>
+              )}
+              <label className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition-colors shadow-lg">
+                <FaCamera className="text-sm" />
+                <input
+                  type="file"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                  accept="image/*"
+                />
+              </label>
             </div>
           </div>
+          {/* Profile Form */}
+          <form onSubmit={handleProfileSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Full Name
+              </label>
+              <div className="relative">
+                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400" />
+                <input
+                  name="name"
+                  value={user.name}
+                  onChange={handleChange}
+                  placeholder="Enter your full name"
+                  className="w-full pl-10 pr-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white shadow-sm"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Email Address
+              </label>
+              <div className="relative">
+                <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400" />
+                <input
+                  name="email"
+                  type="email"
+                  value={user.email}
+                  onChange={handleChange}
+                  placeholder="Enter your email"
+                  className="w-full pl-10 pr-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white shadow-sm"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Phone Number
+              </label>
+              <div className="relative">
+                <FaPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400" />
+                <input
+                  name="phone"
+                  value={user.phone}
+                  onChange={handleChange}
+                  placeholder="Enter your phone number"
+                  className="w-full pl-10 pr-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white shadow-sm"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Address
+              </label>
+              <div className="relative">
+                <FaMapMarkerAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400" />
+                <textarea
+                  name="address"
+                  value={user.address}
+                  onChange={handleChange}
+                  placeholder="Enter your address"
+                  rows="3"
+                  className="w-full pl-10 pr-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all resize-none bg-white shadow-sm"
+                />
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={saving}
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg"
+            >
+              {saving ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <FaSave className="mr-2" />
+                  Save Changes
+                </>
+              )}
+            </button>
+          </form>
         </div>
-      </div>
+      )}
+      {/* Password Change (Settings) */}
+      {(!onlyProfileInfo || onlySettings) && (
+        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+          <div className="flex items-center mb-6">
+            <div className="p-3 bg-green-100 rounded-full mr-3">
+              <FaLock className="text-green-600 text-xl" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-800">Change Password</h2>
+          </div>
+          <form onSubmit={handlePasswordSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Current Password
+              </label>
+              <div className="relative">
+                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-400" />
+                <input
+                  name="current"
+                  type={showPasswords.current ? "text" : "password"}
+                  value={password.current}
+                  onChange={(e) =>
+                    setPassword({ ...password, current: e.target.value })
+                  }
+                  placeholder="Enter current password"
+                  className="w-full pl-10 pr-12 py-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-all bg-white shadow-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility("current")}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-400 hover:text-green-600"
+                >
+                  {showPasswords.current ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                New Password
+              </label>
+              <div className="relative">
+                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-400" />
+                <input
+                  name="new"
+                  type={showPasswords.new ? "text" : "password"}
+                  value={password.new}
+                  onChange={(e) =>
+                    setPassword({ ...password, new: e.target.value })
+                  }
+                  placeholder="Enter new password"
+                  className="w-full pl-10 pr-12 py-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-all bg-white shadow-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility("new")}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-400 hover:text-green-600"
+                >
+                  {showPasswords.new ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Confirm New Password
+              </label>
+              <div className="relative">
+                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-400" />
+                <input
+                  name="confirm"
+                  type={showPasswords.confirm ? "text" : "password"}
+                  value={password.confirm}
+                  onChange={(e) =>
+                    setPassword({ ...password, confirm: e.target.value })
+                  }
+                  placeholder="Confirm new password"
+                  className="w-full pl-10 pr-12 py-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-all bg-white shadow-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility("confirm")}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-400 hover:text-green-600"
+                >
+                  {showPasswords.confirm ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={saving}
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg"
+            >
+              {saving ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <FaLock className="mr-2" />
+                  Update Password
+                </>
+              )}
+            </button>
+          </form>
+          {/* Password Requirements */}
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h4 className="text-sm font-semibold text-gray-800 mb-2">
+              Password Requirements:
+            </h4>
+            <ul className="text-xs text-gray-600 space-y-1">
+              <li>• At least 6 characters long</li>
+              <li>• Include uppercase and lowercase letters</li>
+              <li>• Include at least one number</li>
+              <li>• Include at least one special character</li>
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

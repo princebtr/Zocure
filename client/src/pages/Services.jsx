@@ -96,85 +96,72 @@ const Services = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Hero */}
-      <section className="pt-24 pb-12 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-purple-600/5 to-emerald-600/5"></div>
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl"></div>
-
-        <div className="container mx-auto max-w-6xl relative z-10 text-center">
-          <div className="inline-flex items-center bg-blue-50 border border-blue-200 rounded-full px-4 py-2 mb-6">
+    <div className="w-full">
+      {/* Header Card */}
+      <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-100">
+        <div className="text-center">
+          <div className="inline-flex items-center bg-blue-50 border border-blue-200 rounded-full px-4 py-2 mb-4">
             <FaShieldAlt className="text-blue-500 mr-2" />
             <span className="text-blue-700 font-medium">
               Trusted Medical Services
             </span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">
             Explore Our{" "}
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Services
             </span>
           </h1>
-          <p className="text-lg text-gray-600 mt-4 max-w-xl mx-auto">
+          <p className="text-gray-600 max-w-2xl mx-auto">
             Quality care, on time — wherever you are.
           </p>
         </div>
-      </section>
+      </div>
 
       {/* Service Cards */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {services.map((service, index) => (
-              <div
-                key={index}
-                className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 group"
-              >
-                <div className="mb-4 p-4 bg-gray-50 rounded-full w-fit group-hover:bg-opacity-20">
-                  {service.icon}
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  {service.title}
-                </h3>
-                <p className="text-gray-600 mb-4 text-sm">
-                  {service.description}
-                </p>
-                <ul className="space-y-2 text-sm mb-6">
-                  {service.features.map((feature, i) => (
-                    <li key={i} className="flex items-center text-gray-600">
-                      <FaCheckCircle className="text-green-500 mr-2 text-sm" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  onClick={() => handleServiceAction(service.title)}
-                  className={`w-full bg-gradient-to-r ${service.gradient} text-white py-2 px-4 rounded-full font-semibold hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex items-center justify-center`}
-                >
-                  {service.action}
-                  <FaArrowRight className="ml-2" />
-                </button>
-              </div>
-            ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+        {services.map((service, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 group p-6"
+          >
+            <div className="mb-4 p-4 bg-gray-50 rounded-full w-fit group-hover:bg-opacity-20">
+              {service.icon}
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              {service.title}
+            </h3>
+            <p className="text-gray-600 mb-4 text-sm">{service.description}</p>
+            <ul className="space-y-2 text-sm mb-6">
+              {service.features.map((feature, i) => (
+                <li key={i} className="flex items-center text-gray-600">
+                  <FaCheckCircle className="text-green-500 mr-2 text-sm" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => handleServiceAction(service.title)}
+              className={`w-full bg-gradient-to-r ${service.gradient} text-white py-2 px-4 rounded-full font-semibold hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex items-center justify-center`}
+            >
+              {service.action}
+              <FaArrowRight className="ml-2" />
+            </button>
           </div>
-        </div>
-      </section>
+        ))}
+      </div>
 
-      {/* Emergency CTA */}
-      <section className="py-16 bg-gradient-to-r from-red-500 to-red-600 text-white text-center">
-        <div className="container mx-auto px-4 max-w-3xl">
-          <h2 className="text-4xl font-bold mb-4">Emergency? We’re Ready.</h2>
-          <p className="text-lg mb-6">
-            Call our 24x7 helpline or request an ambulance directly from your
-            dashboard.
-          </p>
-          <button className="bg-white text-red-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl">
-            Call Emergency Services
-          </button>
-        </div>
-      </section>
-      <Footer />
+      {/* Emergency CTA Card */}
+      <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-2xl shadow-lg p-6 text-white text-center">
+        <h2 className="text-2xl font-bold mb-3">Emergency? We're Ready.</h2>
+        <p className="text-lg mb-4">
+          Call our 24x7 helpline or request an ambulance directly from your
+          dashboard.
+        </p>
+        <button className="bg-white text-red-600 px-6 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl">
+          Call Emergency Services
+        </button>
+      </div>
     </div>
   );
 };

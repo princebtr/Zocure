@@ -16,6 +16,7 @@ import {
   FaStar,
   FaTimes as FaClose,
   FaBars,
+  FaHeartbeat,
 } from "react-icons/fa";
 import AddDoctor from "./AddDoctor";
 import ManageDoctors from "./ManageDoctors";
@@ -161,16 +162,19 @@ const AdminDashboard = () => {
         } md:translate-x-0 border-r border-gray-200`}
       >
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-indigo-600">
-          <div className="flex items-center">
-            <div className="bg-white p-2 rounded-xl shadow-lg">
-              <FaCrown className="text-2xl text-yellow-500" />
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-yellow-100">
+          <div className="flex items-center group">
+            <div className="relative">
+              <FaHeartbeat className="text-blue-500 text-3xl transition-all duration-300 group-hover:text-blue-600 group-hover:scale-110" />
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
             </div>
             <div className="ml-3">
-              <h1 className="text-3xl font-extrabold tracking-wide text-white">
-                Zocure
+              <h1 className="text-2xl font-bold text-blue-800 ml-0 transition-colors duration-300 group-hover:text-blue-900">
+                Zoc<span className="text-red-600">ure</span>
               </h1>
-              <p className="text-blue-100 text-sm">Admin Portal</p>
+              <p className="text-sm text-blue-700 font-medium">
+                Admin Dashboard
+              </p>
             </div>
           </div>
           <button

@@ -14,6 +14,7 @@ import {
   FaCalendarCheck,
   FaCrown,
   FaChevronDown,
+  FaTachometerAlt,
 } from "react-icons/fa";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-hot-toast";
@@ -116,23 +117,26 @@ const Navbar = () => {
 
   const navItems = [
     { name: "Home", path: "/", icon: <FaHome /> },
-    {
-      name: "Services",
-      action: handleProtectedClick2,
-      icon: <FaStethoscope />,
-    },
-    { name: "Doctors", action: handleProtectedClick, icon: <FaUserMd /> },
     { name: "About", path: "/about", icon: <FaInfoCircle /> },
     { name: "Contact", path: "/contact", icon: <FaEnvelope /> },
   ];
 
   // 👇 Updated logic to hide navbar
-  const shouldHideNavbar =
-    (user && user.role !== "user") ||
-    location.pathname.startsWith("/dashboard") ||
-    location.pathname.startsWith("/profile");
-
-  if (shouldHideNavbar) return null;
+  const dashboardPaths = [
+    "/dashboard",
+    "/doctor/dashboard",
+    "/admin/dashboard",
+    "/profile",
+    "/admin",
+    "/doctor",
+    "/user",
+  ];
+  const isDashboardPage = dashboardPaths.some((p) =>
+    location.pathname.startsWith(p)
+  );
+  // Only show navbar on landing, about, contact
+  const allowedPaths = ["/", "/about", "/contact"];
+  if (!allowedPaths.includes(location.pathname)) return null;
 
   return (
     <header
@@ -189,6 +193,27 @@ const Navbar = () => {
 
           {/* Right Section */}
           <div className="flex items-center space-x-4">
+            {/* Dashboard Icon */}
+            <button
+              onClick={() => {
+                if (!user) {
+                  navigate("/login");
+                } else if (user.role === "admin") {
+                  navigate("/admin/dashboard");
+                } else if (user.role === "doctor") {
+                  navigate("/doctor/dashboard");
+                } else if (user.role === "test") {
+                  navigate("/test");
+                } else {
+                  navigate("/dashboard");
+                }
+              }}
+              className="flex items-center px-5 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-semibold shadow-lg hover:from-blue-700 hover:to-indigo-800 transition-all text-base ml-2"
+              title="Go to Dashboard"
+            >
+              <FaTachometerAlt className="text-xl mr-2" />
+              Dashboard
+            </button>
             {user ? (
               <div className="relative" ref={dropdownRef}>
                 <button
@@ -253,16 +278,24 @@ const Navbar = () => {
                     <div className="py-2">
                       <button
                         onClick={() => {
-                          navigate("/dashboard");
-                          setDropdownOpen(false);
-                          navigate(0);
+                          if (!user) {
+                            navigate("/login");
+                          } else if (user.role === "admin") {
+                            navigate("/admin/dashboard");
+                          } else if (user.role === "doctor") {
+                            navigate("/doctor/dashboard");
+                          } else if (user.role === "test") {
+                            navigate("/test");
+                          } else {
+                            navigate("/dashboard");
+                          }
                         }}
                         className="w-full text-left px-6 py-3 hover:bg-blue-50 text-sm text-gray-700 flex items-center transition-colors duration-200 group"
                       >
                         <FaCalendarCheck className="mr-3 text-blue-500 group-hover:text-blue-600 transition-colors duration-200" />
                         <span className="font-medium">My Dashboard</span>
                       </button>
-                      <button
+                      {/* <button
                         onClick={() => {
                           navigate("/profile");
                           setDropdownOpen(false);
@@ -272,7 +305,7 @@ const Navbar = () => {
                       >
                         <FaUser className="mr-3 text-emerald-500 group-hover:text-emerald-600 transition-colors duration-200" />
                         <span className="font-medium">My Profile</span>
-                      </button>
+                      </button> */}
                     </div>
 
                     <div className="border-t border-gray-100">

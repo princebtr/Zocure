@@ -443,7 +443,7 @@ const BookAppointment = () => {
   `;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50 py-8 pt-24">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50 py-8">
       <style>{customCalendarStyles}</style>
       <div className="container mx-auto px-4 max-w-5xl">
         {/* Step Indicator */}
