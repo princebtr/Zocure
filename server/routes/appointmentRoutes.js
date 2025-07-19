@@ -27,6 +27,25 @@ router.post(
   appointmentController.verifyPayment
 );
 
+// Doctor routes
+router.get(
+  "/doctor/appointments",
+  ...authMiddleware(["doctor"]),
+  appointmentController.getDoctorAppointments
+);
+
+router.get(
+  "/doctor/appointments/:appointmentId",
+  ...authMiddleware(["doctor"]),
+  appointmentController.getAppointmentDetails
+);
+
+router.patch(
+  "/doctor/appointments/:appointmentId/status",
+  ...authMiddleware(["doctor"]),
+  appointmentController.updateAppointmentStatusByDoctor
+);
+
 // Admin routes
 router.get(
   "/all",

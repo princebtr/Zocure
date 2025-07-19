@@ -9,8 +9,8 @@ cloudinary.config({
   api_secret: "1RGJLzdZGGE3a9KhsnyUomeF294",
 });
 
-// Set up Cloudinary storage for multer
-const storage = new CloudinaryStorage({
+// Set up Cloudinary storage for doctor profiles
+const doctorStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "doctor_profiles", // Folder in Cloudinary
@@ -19,6 +19,17 @@ const storage = new CloudinaryStorage({
   },
 });
 
-const upload = multer({ storage });
+// Set up Cloudinary storage for user profiles
+const userStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "user_profiles", // Folder in Cloudinary
+    allowed_formats: ["jpg", "jpeg", "png"],
+    transformation: [{ width: 400, height: 400, crop: "limit" }],
+  },
+});
 
-module.exports = upload;
+const uploadDoctor = multer({ storage: doctorStorage });
+const uploadUser = multer({ storage: userStorage });
+
+module.exports = { uploadDoctor, uploadUser };

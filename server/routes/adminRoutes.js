@@ -7,13 +7,13 @@ const {
 } = require("../controllers/adminController");
 const { authMiddleware } = require("../middleware/authMiddleware");
 const appointmentController = require("../controllers/appointmentController");
-const upload = require("../utils/multer");
+const { uploadDoctor } = require("../utils/multer");
 
 // Apply both token + role check together
 router.post(
   "/add-doctor",
   ...authMiddleware(["admin"]),
-  upload.single("image"),
+  uploadDoctor.single("image"),
   addDoctor
 );
 router.get("/doctors", ...authMiddleware(["admin"]), getAllDoctors);

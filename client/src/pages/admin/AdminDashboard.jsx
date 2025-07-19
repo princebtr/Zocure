@@ -34,13 +34,31 @@ const AdminDashboard = () => {
     totalRevenue: 0,
   });
   const [recentActivity, setRecentActivity] = useState([]);
+  const [user, setUser] = useState(null);
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
+    fetchUserProfile();
     fetchDashboardStats();
   }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const decoded = JSON.parse(atob(token.split(".")[1]));
+      const response = await axios.get(`/auth/profile/${decoded.id}`);
+      setUser(response.data);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
 
   const fetchDashboardStats = async () => {
     try {
@@ -188,12 +206,24 @@ const AdminDashboard = () => {
         {/* Admin Profile */}
         <div className="p-6 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center">
-            <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
-              <FaCrown className="text-2xl" />
-            </div>
+            {user?.image ? (
+              <img
+                src={user.image}
+                alt="Profile"
+                className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-lg"
+              />
+            ) : (
+              <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                <FaCrown className="text-2xl" />
+              </div>
+            )}
             <div className="ml-3">
-              <p className="font-semibold text-gray-800">Admin</p>
-              <p className="text-sm text-gray-600">Administrator</p>
+              <p className="font-semibold text-gray-800">
+                {user?.name || "Admin"}
+              </p>
+              <p className="text-sm text-gray-600">
+                {user?.email || "Administrator"}
+              </p>
             </div>
           </div>
         </div>

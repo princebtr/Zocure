@@ -16,7 +16,14 @@ const appointmentSchema = new mongoose.Schema(
     appointmentDate: { type: Date, required: true },
     status: {
       type: String,
-      enum: ["pending", "confirmed", "cancelled"],
+      enum: [
+        "pending",
+        "confirmed",
+        "cancelled",
+        "completed",
+        "no-show",
+        "in-progress",
+      ],
       default: "pending",
     },
     paymentStatus: {
@@ -26,6 +33,10 @@ const appointmentSchema = new mongoose.Schema(
     },
     paymentId: { type: String },
     amount: { type: Number, required: true },
+    consultationNotes: { type: String, default: "" },
+    doctorNotes: { type: String, default: "" },
+    patientVisited: { type: Boolean, default: false },
+    checkupDone: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

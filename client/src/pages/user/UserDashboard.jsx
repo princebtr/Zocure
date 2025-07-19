@@ -37,11 +37,29 @@ const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("dashboard");
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    fetchUserProfile();
     if (activeSection === "dashboard") fetchAppointments();
   }, [activeSection]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const decoded = JSON.parse(atob(token.split(".")[1]));
+      const response = await axios.get(`/auth/profile/${decoded.id}`);
+      setUser(response.data);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
 
   const fetchAppointments = async () => {
     try {
@@ -200,12 +218,24 @@ const UserDashboard = () => {
         {/* User Profile */}
         <div className="p-6 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
-              <FaUser className="text-2xl" />
-            </div>
+            {user?.image ? (
+              <img
+                src={user.image}
+                alt="Profile"
+                className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-lg"
+              />
+            ) : (
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                <FaUser className="text-2xl" />
+              </div>
+            )}
             <div className="ml-3">
-              <p className="font-semibold text-gray-800">User</p>
-              <p className="text-sm text-gray-600">Welcome!</p>
+              <p className="font-semibold text-gray-800">
+                {user?.name || "User"}
+              </p>
+              <p className="text-sm text-gray-600">
+                {user?.email || "Welcome!"}
+              </p>
             </div>
           </div>
         </div>
@@ -462,17 +492,64 @@ const UserDashboard = () => {
                               </div>
                               <div className="flex items-center text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg">
                                 <FaClock className="mr-2 text-blue-500" />
-                                {appointment.appointmentTime || "TBD"}
+                                {appointment.slotId || "TBD"}
                               </div>
                               <div className="flex items-center text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg">
                                 <FaMapMarkerAlt className="mr-2 text-blue-500" />
                                 {appointment.location || "Clinic"}
                               </div>
                             </div>
-                            {appointment.notes && (
+
+                            {/* Status Indicators for Completed Appointments */}
+                            {appointment.status === "completed" && (
+                              <div className="mt-4 flex space-x-4">
+                                <div className="flex items-center">
+                                  <span
+                                    className={`w-3 h-3 rounded-full mr-2 ${
+                                      appointment.patientVisited
+                                        ? "bg-green-500"
+                                        : "bg-gray-300"
+                                    }`}
+                                  ></span>
+                                  <span className="text-sm text-gray-600">
+                                    Visited:{" "}
+                                    {appointment.patientVisited ? "Yes" : "No"}
+                                  </span>
+                                </div>
+                                <div className="flex items-center">
+                                  <span
+                                    className={`w-3 h-3 rounded-full mr-2 ${
+                                      appointment.checkupDone
+                                        ? "bg-green-500"
+                                        : "bg-gray-300"
+                                    }`}
+                                  ></span>
+                                  <span className="text-sm text-gray-600">
+                                    Checkup:{" "}
+                                    {appointment.checkupDone
+                                      ? "Done"
+                                      : "Pending"}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Doctor Notes */}
+                            {appointment.doctorNotes && (
                               <div className="mt-4 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
                                 <p className="text-sm text-gray-700">
-                                  {appointment.notes}
+                                  <strong>Doctor Notes:</strong>{" "}
+                                  {appointment.doctorNotes}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Consultation Notes */}
+                            {appointment.consultationNotes && (
+                              <div className="mt-4 p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
+                                <p className="text-sm text-gray-700">
+                                  <strong>Consultation:</strong>{" "}
+                                  {appointment.consultationNotes}
                                 </p>
                               </div>
                             )}

@@ -24,6 +24,7 @@ export default function Profile({ onlyProfileInfo, onlySettings }) {
     address: "",
   });
   const [avatar, setAvatar] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [password, setPassword] = useState({
@@ -58,6 +59,11 @@ export default function Profile({ onlyProfileInfo, onlySettings }) {
         phone: response.data.phone || "",
         address: response.data.address || "",
       });
+
+      // Set avatar if user has an image
+      if (response.data.image) {
+        setAvatar(response.data.image);
+      }
     } catch (error) {
       console.error("Error fetching profile:", error);
       toast.error("Failed to load profile");
@@ -73,14 +79,27 @@ export default function Profile({ onlyProfileInfo, onlySettings }) {
     const file = e.target.files[0];
     if (!file) return;
 
-    // For now, we'll just show a preview
-    // In a real app, you'd upload to Cloudinary or similar
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB");
+      return;
+    }
+
+    // Store the file for upload
+    setSelectedImage(file);
+
+    // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
       setAvatar(e.target.result);
     };
     reader.readAsDataURL(file);
-    toast.success("Avatar updated successfully");
   };
 
   const handleProfileSubmit = async (e) => {
@@ -91,8 +110,33 @@ export default function Profile({ onlyProfileInfo, onlySettings }) {
       const token = localStorage.getItem("token");
       const decoded = JSON.parse(atob(token.split(".")[1]));
 
-      await axiosInstance.patch(`/auth/profile/${decoded.id}`, user);
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append("name", user.name);
+      formData.append("email", user.email);
+      formData.append("phone", user.phone);
+      formData.append("address", user.address);
+
+      if (selectedImage) {
+        formData.append("image", selectedImage);
+      }
+
+      const response = await axiosInstance.patch(
+        `/auth/profile/${decoded.id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (response.data.user.image) {
+        setAvatar(response.data.user.image);
+      }
+
       toast.success("Profile updated successfully");
+      setSelectedImage(null); // Clear the selected image after successful upload
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("Failed to update profile");

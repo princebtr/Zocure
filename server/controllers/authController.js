@@ -97,6 +97,11 @@ exports.updateProfile = async (req, res) => {
     user.phone = phone || user.phone;
     user.address = address || user.address;
 
+    // Handle image upload if file is present
+    if (req.file && req.file.path) {
+      user.image = req.file.path;
+    }
+
     await user.save();
 
     res.status(200).json({
@@ -107,6 +112,7 @@ exports.updateProfile = async (req, res) => {
         email: user.email,
         phone: user.phone,
         address: user.address,
+        image: user.image,
         role: user.role,
       },
     });

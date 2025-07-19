@@ -226,11 +226,143 @@ exports.updateAppointmentStatus = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating appointment status:", error);
+    res.status(500).json({
+      message: "Error updating appointment status",
+      error: error.message,
+    });
+  }
+};
+
+// Get doctor's appointments
+exports.getDoctorAppointments = async (req, res) => {
+  try {
+    const userId = req.user.id; // From auth middleware
+    console.log("Doctor appointments request - User ID:", userId);
+    console.log("User role:", req.user.role);
+
+    // First find the doctor record using the user ID
+    const doctor = await Doctor.findOne({ userId });
+    console.log("Found doctor:", doctor ? doctor._id : "Not found");
+
+    if (!doctor) {
+      console.log("No doctor profile found, returning empty array");
+      return res.status(200).json([]);
+    }
+
+    const appointments = await Appointment.find({ doctorId: doctor._id })
+      .populate({
+        path: "userId",
+        select: "name email phone",
+      })
+      .sort({ appointmentDate: -1 });
+
+    console.log("Doctor appointments fetched:", appointments.length);
+    res.status(200).json(appointments);
+  } catch (error) {
+    console.error("Error fetching doctor appointments:", error);
     res
       .status(500)
-      .json({
-        message: "Error updating appointment status",
-        error: error.message,
+      .json({ message: "Error fetching appointments", error: error.message });
+  }
+};
+
+// Update appointment status by doctor
+exports.updateAppointmentStatusByDoctor = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+    const {
+      status,
+      patientVisited,
+      checkupDone,
+      doctorNotes,
+      consultationNotes,
+    } = req.body;
+    const userId = req.user.id;
+
+    // First find the doctor record using the user ID
+    const doctor = await Doctor.findOne({ userId });
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor profile not found" });
+    }
+
+    const appointment = await Appointment.findById(appointmentId);
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    // Verify the appointment belongs to this doctor
+    if (appointment.doctorId.toString() !== doctor._id.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this appointment" });
+    }
+
+    // Update appointment details
+    if (status) appointment.status = status;
+    if (patientVisited !== undefined)
+      appointment.patientVisited = patientVisited;
+    if (checkupDone !== undefined) appointment.checkupDone = checkupDone;
+    if (doctorNotes) appointment.doctorNotes = doctorNotes;
+    if (consultationNotes) appointment.consultationNotes = consultationNotes;
+
+    await appointment.save();
+
+    console.log("Appointment updated by doctor:", appointmentId, status);
+    res.status(200).json({
+      message: "Appointment updated successfully",
+      appointment,
+    });
+  } catch (error) {
+    console.error("Error updating appointment status:", error);
+    res.status(500).json({
+      message: "Error updating appointment status",
+      error: error.message,
+    });
+  }
+};
+
+// Get appointment details for doctor
+exports.getAppointmentDetails = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+    const userId = req.user.id;
+
+    // First find the doctor record using the user ID
+    const doctor = await Doctor.findOne({ userId });
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor profile not found" });
+    }
+
+    const appointment = await Appointment.findById(appointmentId)
+      .populate({
+        path: "userId",
+        select: "name email phone address",
+      })
+      .populate({
+        path: "doctorId",
+        populate: {
+          path: "userId",
+          select: "name email",
+        },
       });
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    // Verify the appointment belongs to this doctor
+    if (appointment.doctorId._id.toString() !== doctor._id.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to view this appointment" });
+    }
+
+    res.status(200).json(appointment);
+  } catch (error) {
+    console.error("Error fetching appointment details:", error);
+    res.status(500).json({
+      message: "Error fetching appointment details",
+      error: error.message,
+    });
   }
 };
