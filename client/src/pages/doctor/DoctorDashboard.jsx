@@ -49,6 +49,41 @@ const DoctorDashboard = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("dashboard");
+  // Replace newSlotDay and newSlotStart with multi-select state
+  const [selectedDays, setSelectedDays] = useState([]);
+  const [selectedTimes, setSelectedTimes] = useState([]);
+  const [scheduleLoading, setScheduleLoading] = useState(false);
+  const [scheduleError, setScheduleError] = useState("");
+  const [scheduleSuccess, setScheduleSuccess] = useState("");
+  // Add state for slot appointment modal
+  const [showSlotAppointmentModal, setShowSlotAppointmentModal] =
+    useState(false);
+  const [slotAppointment, setSlotAppointment] = useState(null);
+  const [slotAppointmentLoading, setSlotAppointmentLoading] = useState(false);
+
+  const allDaysOfWeek = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+  const allTimeSlots = [
+    "09:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+    "18:00",
+    "19:00",
+    "20:00", // Last slot is 20:00-21:00
+  ];
 
   useEffect(() => {
     fetchUserProfile();
@@ -275,6 +310,107 @@ const DoctorDashboard = () => {
     );
   };
 
+  // Add multiple slots at once
+  const handleAddMultipleSlots = () => {
+    setScheduleError("");
+    setScheduleSuccess("");
+    if (selectedDays.length === 0 || selectedTimes.length === 0) {
+      setScheduleError("Please select at least one day and one time slot.");
+      return;
+    }
+    let newSlots = [...slots];
+    selectedDays.forEach((day) => {
+      selectedTimes.forEach((startTime) => {
+        const endHour = parseInt(startTime.split(":")[0], 10) + 1;
+        if (endHour > 21) return; // Only allow up to 20:00-21:00
+        const endTime = `${endHour.toString().padStart(2, "0")}:00`;
+        // Prevent duplicates
+        if (
+          !newSlots.some(
+            (s) =>
+              s.day === day &&
+              s.startTime === startTime &&
+              s.endTime === endTime
+          )
+        ) {
+          newSlots.push({ day, startTime, endTime, isBooked: false });
+        }
+      });
+    });
+    setSlots(newSlots);
+    setSelectedDays([]);
+    setSelectedTimes([]);
+  };
+
+  // Remove a slot
+  const handleRemoveSlot = (idx) => {
+    setScheduleError("");
+    setScheduleSuccess("");
+    setSlots(slots.filter((_, i) => i !== idx));
+  };
+
+  // Save slots to backend
+  const handleSaveSchedule = async () => {
+    setScheduleLoading(true);
+    setScheduleError("");
+    setScheduleSuccess("");
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        "/doctors/update-slots",
+        { availableSlots: slots },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.status === 200) {
+        setScheduleSuccess("Schedule updated successfully.");
+        fetchSlots();
+      }
+    } catch (error) {
+      setScheduleError(
+        error.response?.data?.message || "Failed to update schedule."
+      );
+    } finally {
+      setScheduleLoading(false);
+    }
+  };
+
+  // Function to open modal for a booked slot
+  const openSlotAppointmentModal = async (slot) => {
+    setSlotAppointmentLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`/appointments/doctor/appointments`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // Match by slotId string, fallback to day/startTime/endTime
+      const found = response.data.find(
+        (apt) =>
+          (apt.slotId && String(apt.slotId) === String(slot._id)) ||
+          (apt.slotId == null &&
+            apt.appointmentDate &&
+            apt.doctorId &&
+            apt.doctorId._id &&
+            slot.day &&
+            slot.startTime &&
+            slot.endTime &&
+            apt.doctorId._id === slot.doctorId &&
+            apt.day === slot.day &&
+            apt.startTime === slot.startTime &&
+            apt.endTime === slot.endTime)
+      );
+      if (found) {
+        setSlotAppointment(found);
+        setShowSlotAppointmentModal(true);
+      } else {
+        toast.error("No appointment found for this slot.");
+      }
+    } catch (error) {
+      toast.error("Failed to fetch appointment for slot.");
+    } finally {
+      setSlotAppointmentLoading(false);
+    }
+  };
+
   const sidebarItems = [
     {
       name: "Dashboard",
@@ -293,6 +429,12 @@ const DoctorDashboard = () => {
       icon: <FaUsers />,
       key: "patients",
       color: "text-purple-600",
+    },
+    {
+      name: "Schedule",
+      icon: <FaClock />,
+      key: "schedule",
+      color: "text-orange-600",
     },
   ];
 
@@ -739,7 +881,12 @@ const DoctorDashboard = () => {
                               <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                                 <FaEye />
                               </button>
-                              <button className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+                              <button
+                                className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                                onClick={() =>
+                                  openAppointmentModal(appointment._id)
+                                }
+                              >
                                 <FaEdit />
                               </button>
 
@@ -795,154 +942,171 @@ const DoctorDashboard = () => {
               </div>
             </>
           )}
-          {activeSection === "appointments" && (
-            <>
-              {/* Appointment Management */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-gray-800">
-                    Manage Appointments
-                  </h2>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => setActiveTab("today")}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        activeTab === "today"
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      Today
-                    </button>
-                    <button
-                      onClick={() => setActiveTab("upcoming")}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        activeTab === "upcoming"
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      Upcoming
-                    </button>
-                    <button
-                      onClick={() => setActiveTab("past")}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        activeTab === "past"
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      Past
-                    </button>
-                  </div>
+          {activeSection === "schedule" && (
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 max-w-6xl mx-auto w-full">
+              <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
+                <FaClock className="mr-3 text-orange-500 text-2xl" /> Doctor
+                Schedule
+              </h2>
+              <p className="text-gray-600 mb-6 text-lg">
+                Select multiple days and time slots, then click <b>Add Slots</b>{" "}
+                to add all combinations at once.
+              </p>
+              {scheduleError && (
+                <div className="mb-4 text-red-600 bg-red-50 p-3 rounded-lg border border-red-200 text-base">
+                  {scheduleError}
                 </div>
-
-                {currentAppointments.length === 0 ? (
-                  <div className="text-center py-8">
-                    <FaCalendarCheck className="text-4xl text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500">No appointments found</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {currentAppointments.map((appointment) => (
-                      <div
-                        key={appointment._id}
-                        className="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-all duration-200"
+              )}
+              {scheduleSuccess && (
+                <div className="mb-4 text-green-600 bg-green-50 p-3 rounded-lg border border-green-200 text-base">
+                  {scheduleSuccess}
+                </div>
+              )}
+              <div className="flex flex-col md:flex-row md:items-end gap-8 mb-8">
+                <div className="flex-1">
+                  <label className="block text-base font-medium text-gray-700 mb-2">
+                    Days
+                  </label>
+                  <div className="flex flex-wrap gap-3">
+                    {allDaysOfWeek.map((day) => (
+                      <label
+                        key={day}
+                        className={`flex items-center space-x-2 cursor-pointer px-3 py-2 rounded-lg border ${
+                          selectedDays.includes(day)
+                            ? "bg-blue-100 border-blue-400"
+                            : "bg-gray-50 border-gray-200"
+                        } transition-all`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-3">
-                              <h3 className="text-lg font-semibold text-gray-800">
-                                {appointment.userId?.name || "Unknown Patient"}
-                              </h3>
-                              <span
-                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                                  appointment.status
-                                )}`}
-                              >
-                                {getStatusIcon(appointment.status)}
-                                <span className="ml-1 capitalize">
-                                  {appointment.status}
-                                </span>
-                              </span>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                              <div className="flex items-center text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg">
-                                <FaCalendarCheck className="mr-2 text-blue-500" />
-                                {new Date(
-                                  appointment.appointmentDate
-                                ).toLocaleDateString()}
-                              </div>
-                              <div className="flex items-center text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg">
-                                <FaClock className="mr-2 text-blue-500" />
-                                {appointment.slotId || "TBD"}
-                              </div>
-                              <div className="flex items-center text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg">
-                                <FaPhone className="mr-2 text-blue-500" />
-                                {appointment.userId?.phone || "No phone"}
-                              </div>
-                            </div>
-
-                            {/* Status Indicators */}
-                            <div className="flex space-x-4 mb-4">
-                              <div className="flex items-center">
-                                <span
-                                  className={`w-3 h-3 rounded-full mr-2 ${
-                                    appointment.patientVisited
-                                      ? "bg-green-500"
-                                      : "bg-gray-300"
-                                  }`}
-                                ></span>
-                                <span className="text-sm text-gray-600">
-                                  Patient Visited:{" "}
-                                  {appointment.patientVisited ? "Yes" : "No"}
-                                </span>
-                              </div>
-                              <div className="flex items-center">
-                                <span
-                                  className={`w-3 h-3 rounded-full mr-2 ${
-                                    appointment.checkupDone
-                                      ? "bg-green-500"
-                                      : "bg-gray-300"
-                                  }`}
-                                ></span>
-                                <span className="text-sm text-gray-600">
-                                  Checkup Done:{" "}
-                                  {appointment.checkupDone ? "Yes" : "No"}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Doctor Notes */}
-                            {appointment.doctorNotes && (
-                              <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400">
-                                <p className="text-sm text-gray-700">
-                                  <strong>Notes:</strong>{" "}
-                                  {appointment.doctorNotes}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex flex-col space-y-2 ml-4">
-                            <button
-                              onClick={() =>
-                                openAppointmentModal(appointment._id)
-                              }
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                              title="Manage Appointment"
-                            >
-                              <FaEdit />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+                        <input
+                          type="checkbox"
+                          checked={selectedDays.includes(day)}
+                          onChange={() =>
+                            setSelectedDays((prev) =>
+                              prev.includes(day)
+                                ? prev.filter((d) => d !== day)
+                                : [...prev, day]
+                            )
+                          }
+                          className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                        />
+                        <span className="text-base font-medium">{day}</span>
+                      </label>
                     ))}
                   </div>
-                )}
+                </div>
+                <div className="flex-1">
+                  <label className="block text-base font-medium text-gray-700 mb-2">
+                    Time Slots
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {allTimeSlots.map((time) => (
+                      <label
+                        key={time}
+                        className={`flex items-center space-x-2 cursor-pointer px-3 py-2 rounded-lg border ${
+                          selectedTimes.includes(time)
+                            ? "bg-blue-100 border-blue-400"
+                            : "bg-gray-50 border-gray-200"
+                        } transition-all`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedTimes.includes(time)}
+                          onChange={() =>
+                            setSelectedTimes((prev) =>
+                              prev.includes(time)
+                                ? prev.filter((t) => t !== time)
+                                : [...prev, time]
+                            )
+                          }
+                          className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                        />
+                        <span className="text-base font-medium">
+                          {time} -{" "}
+                          {`${(parseInt(time.split(":")[0], 10) + 1)
+                            .toString()
+                            .padStart(2, "0")}:00`}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  onClick={handleAddMultipleSlots}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-lg font-semibold mt-4 md:mt-0 shadow-md"
+                >
+                  <FaPlus className="inline mr-2" /> Add Slots
+                </button>
               </div>
-            </>
+              <div className="overflow-x-auto">
+                <table className="min-w-full border border-gray-200 rounded-lg text-lg">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="px-6 py-3 text-left font-semibold text-gray-700">
+                        Day
+                      </th>
+                      <th className="px-6 py-3 text-left font-semibold text-gray-700">
+                        Start Time
+                      </th>
+                      <th className="px-6 py-3 text-left font-semibold text-gray-700">
+                        End Time
+                      </th>
+                      <th className="px-6 py-3"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {slots.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="text-center text-gray-500 py-8 text-lg"
+                        >
+                          No slots added yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      slots
+                        .sort((a, b) =>
+                          allDaysOfWeek.indexOf(a.day) !==
+                          allDaysOfWeek.indexOf(b.day)
+                            ? allDaysOfWeek.indexOf(a.day) -
+                              allDaysOfWeek.indexOf(b.day)
+                            : a.startTime.localeCompare(b.startTime)
+                        )
+                        .map((slot, idx) => (
+                          <tr
+                            key={idx}
+                            className="border-t border-gray-100 hover:bg-blue-50 transition-all"
+                          >
+                            <td className="px-6 py-3 font-medium">
+                              {slot.day}
+                            </td>
+                            <td className="px-6 py-3">{slot.startTime}</td>
+                            <td className="px-6 py-3">{slot.endTime}</td>
+                            <td className="px-6 py-3">
+                              <button
+                                onClick={() => handleRemoveSlot(idx)}
+                                className="text-red-600 hover:text-red-800 text-xl"
+                                title="Remove slot"
+                              >
+                                <FaTimes />
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-8 flex justify-end">
+                <button
+                  onClick={handleSaveSchedule}
+                  className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-lg font-semibold shadow-md disabled:opacity-50"
+                  disabled={scheduleLoading}
+                >
+                  {scheduleLoading ? "Saving..." : "Save Schedule"}
+                </button>
+              </div>
+            </div>
           )}
 
           {activeSection === "patients" && (
@@ -1022,6 +1186,17 @@ const DoctorDashboard = () => {
                           >
                             {slot.isBooked ? "Booked" : "Available"}
                           </span>
+                          {slot.isBooked && (
+                            <button
+                              className="ml-4 px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                              onClick={() => openSlotAppointmentModal(slot)}
+                              disabled={slotAppointmentLoading}
+                            >
+                              {slotAppointmentLoading
+                                ? "Loading..."
+                                : "Update Status"}
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -1264,6 +1439,171 @@ const DoctorDashboard = () => {
           className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
+      )}
+
+      {/* Slot Appointment Management Modal */}
+      {showSlotAppointmentModal && slotAppointment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-800">
+                Update Appointment Status
+              </h2>
+              <button
+                onClick={() => {
+                  setShowSlotAppointmentModal(false);
+                  setSlotAppointment(null);
+                }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <FaTimes className="text-xl" />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                  Patient Information
+                </h3>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-600">Name</p>
+                      <p className="font-medium">
+                        {slotAppointment.userId?.name}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Email</p>
+                      <p className="font-medium">
+                        {slotAppointment.userId?.email}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Phone</p>
+                      <p className="font-medium">
+                        {slotAppointment.userId?.phone || "Not provided"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Appointment Date</p>
+                      <p className="font-medium">
+                        {new Date(
+                          slotAppointment.appointmentDate
+                        ).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Status Management */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                  Appointment Status
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Status
+                    </label>
+                    <select
+                      value={slotAppointment.status}
+                      onChange={(e) =>
+                        setSlotAppointment({
+                          ...slotAppointment,
+                          status: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="confirmed">Confirmed</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Doctor Notes
+                    </label>
+                    <textarea
+                      value={slotAppointment.doctorNotes || ""}
+                      onChange={(e) =>
+                        setSlotAppointment({
+                          ...slotAppointment,
+                          doctorNotes: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={slotAppointment.checkupDone || false}
+                      onChange={(e) =>
+                        setSlotAppointment({
+                          ...slotAppointment,
+                          checkupDone: e.target.checked,
+                        })
+                      }
+                      id="checkupDone"
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                    />
+                    <label
+                      htmlFor="checkupDone"
+                      className="text-sm text-gray-700"
+                    >
+                      Checkup Done
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mr-2"
+                  onClick={async () => {
+                    // Save status update
+                    try {
+                      setSlotAppointmentLoading(true);
+                      const token = localStorage.getItem("token");
+                      await axios.patch(
+                        `/appointments/doctor/appointments/${slotAppointment._id}/status`,
+                        {
+                          status: slotAppointment.status,
+                          doctorNotes: slotAppointment.doctorNotes,
+                          checkupDone: slotAppointment.checkupDone,
+                        },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                      );
+                      toast.success("Appointment status updated");
+                      setShowSlotAppointmentModal(false);
+                      setSlotAppointment(null);
+                      fetchAppointments();
+                    } catch (error) {
+                      toast.error("Failed to update appointment status");
+                    } finally {
+                      setSlotAppointmentLoading(false);
+                    }
+                  }}
+                  disabled={slotAppointmentLoading}
+                >
+                  {slotAppointmentLoading ? "Saving..." : "Save"}
+                </button>
+                <button
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                  onClick={() => {
+                    setShowSlotAppointmentModal(false);
+                    setSlotAppointment(null);
+                  }}
+                  disabled={slotAppointmentLoading}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

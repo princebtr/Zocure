@@ -1,6 +1,7 @@
 const Doctor = require("../models/Doctor");
 const User = require("../models/User");
 const Appointment = require("../models/Appointment");
+const mongoose = require("mongoose");
 
 // Admin: Add a new doctor
 exports.addDoctor = async (req, res) => {
@@ -83,7 +84,50 @@ exports.getDoctorById = async (req, res) => {
 exports.updateSlots = async (req, res) => {
   try {
     const doctorId = req.user.id; // From auth middleware
-    const { availableSlots } = req.body;
+    let { availableSlots } = req.body;
+
+    // Ensure each slot has a unique _id
+    availableSlots = availableSlots.map((slot) => {
+      if (!slot._id) {
+        return { ...slot, _id: new mongoose.Types.ObjectId() };
+      }
+      return slot;
+    });
+
+    // Validation: Each slot must be 1 hour and no overlaps for the same day
+    const slotMap = {};
+    for (const slot of availableSlots) {
+      const { day, startTime, endTime } = slot;
+      // Check 1-hour slot
+      const [startHour, startMin] = startTime.split(":").map(Number);
+      const [endHour, endMin] = endTime.split(":").map(Number);
+      const duration = endHour * 60 + endMin - (startHour * 60 + startMin);
+      if (duration !== 60) {
+        return res.status(400).json({
+          message: `Each slot must be exactly 1 hour. Invalid slot: ${day} ${startTime}-${endTime}`,
+        });
+      }
+      // Check for overlaps
+      const key = day;
+      if (!slotMap[key]) slotMap[key] = [];
+      for (const existing of slotMap[key]) {
+        const [exStartHour, exStartMin] = existing.startTime
+          .split(":")
+          .map(Number);
+        const [exEndHour, exEndMin] = existing.endTime.split(":").map(Number);
+        const exStart = exStartHour * 60 + exStartMin;
+        const exEnd = exEndHour * 60 + exEndMin;
+        const currStart = startHour * 60 + startMin;
+        const currEnd = endHour * 60 + endMin;
+        // Overlap if start < exEnd and end > exStart
+        if (currStart < exEnd && currEnd > exStart) {
+          return res.status(400).json({
+            message: `Overlapping slots on ${day}: ${startTime}-${endTime} overlaps with ${existing.startTime}-${existing.endTime}`,
+          });
+        }
+      }
+      slotMap[key].push(slot);
+    }
 
     const doctor = await Doctor.findOne({ userId: doctorId });
     if (!doctor) {

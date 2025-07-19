@@ -7,12 +7,15 @@ const doctorSchema = new mongoose.Schema({
   fees: { type: Number, required: true },
   image: { type: String, default: null },
   availableSlots: [
-    {
-      day: { type: String, required: true },
-      startTime: { type: String, required: true },
-      endTime: { type: String, required: true },
-      isBooked: { type: Boolean, default: false },
-    },
+    new mongoose.Schema(
+      {
+        day: { type: String, required: true },
+        startTime: { type: String, required: true },
+        endTime: { type: String, required: true },
+        isBooked: { type: Boolean, default: false },
+      },
+      { _id: true }
+    ),
   ],
 });
 
