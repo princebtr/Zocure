@@ -20,6 +20,9 @@ import {
   FaMoneyBillWave,
   FaCreditCard,
   FaCheckCircle,
+  FaBuilding,
+  FaHandHoldingUsd,
+  FaWallet,
 } from "react-icons/fa";
 
 // Initialize Stripe
@@ -155,14 +158,14 @@ const CheckoutForm = ({
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl shadow-lg">
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl shadow-lg border border-blue-100">
       <div className="flex items-center mb-6">
         <FaCreditCard className="text-blue-600 text-2xl mr-3" />
         <h2 className="text-2xl font-bold text-gray-800">Complete Payment</h2>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-white p-5 rounded-xl border border-blue-100 shadow-sm">
+        <div className="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-gray-100">
             <div>
               <p className="text-gray-600">Doctor</p>
@@ -269,6 +272,120 @@ const CheckoutForm = ({
   );
 };
 
+const PaymentMethodSelection = ({
+  doctor,
+  selectedSlot,
+  selectedDate,
+  onSelect,
+  onBack,
+}) => {
+  const paymentMethods = [
+    {
+      id: "stripe",
+      name: "Credit/Debit Card",
+      icon: FaCreditCard,
+      color: "from-blue-500 to-indigo-600",
+      description: "Secure online payment with Visa, Mastercard, etc.",
+    },
+    {
+      id: "paypal",
+      name: "PayPal",
+      icon: FaWallet,
+      color: "from-blue-400 to-indigo-500",
+      description: "Pay using your PayPal account",
+    },
+    {
+      id: "clinic",
+      name: "Pay at Clinic",
+      icon: FaBuilding,
+      color: "from-green-500 to-emerald-600",
+      description: "Pay in-person at the clinic reception",
+    },
+  ];
+
+  return (
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl shadow-lg border border-blue-100">
+      <div className="flex items-center mb-6">
+        <FaHandHoldingUsd className="text-blue-600 text-2xl mr-3" />
+        <h2 className="text-2xl font-bold text-gray-800">
+          Select Payment Method
+        </h2>
+      </div>
+
+      <div className="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 pb-4 border-b border-gray-100">
+          <div>
+            <p className="text-gray-600">Doctor</p>
+            <h3 className="font-bold text-lg">
+              Dr. {doctor.name || doctor.userId?.name || "Unknown Doctor"}
+            </h3>
+          </div>
+          <div className="mt-2 md:mt-0">
+            <p className="text-gray-600">Specialty</p>
+            <p className="font-semibold text-blue-600">
+              {doctor.specialization || "General Medicine"}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <p className="text-gray-600">Date</p>
+            <p className="font-medium">
+              {typeof selectedDate === "string"
+                ? selectedDate
+                : selectedDate.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-gray-600">Time Slot</p>
+            <p className="font-medium">
+              {selectedSlot.startTime} - {selectedSlot.endTime}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-gray-600">Fee</p>
+            <p className="font-bold text-lg text-blue-600">${doctor.fees}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {paymentMethods.map((method) => (
+          <button
+            key={method.id}
+            onClick={() => onSelect(method.id)}
+            className={`bg-gradient-to-br ${method.color} text-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1 text-left`}
+          >
+            <div className="flex items-center mb-3">
+              <method.icon className="text-2xl mr-3 text-white opacity-90" />
+              <h3 className="text-xl font-bold">{method.name}</h3>
+            </div>
+            <p className="text-blue-100 text-sm">{method.description}</p>
+          </button>
+        ))}
+      </div>
+
+      <div className="flex">
+        <button
+          onClick={onBack}
+          className="flex items-center justify-center px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          <FaArrowLeft className="mr-2" />
+          Back to Slot Selection
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const BookAppointment = () => {
   const { doctorId } = useParams();
   const navigate = useNavigate();
@@ -277,8 +394,7 @@ const BookAppointment = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [loadingSlots, setLoadingSlots] = useState(false);
-  const [showPayment, setShowPayment] = useState(false);
-  const [step, setStep] = useState(1); // 1: select, 2: payment
+  const [step, setStep] = useState(1); // 1: select, 2: payment method, 3: payment form, 4: success
 
   useEffect(() => {
     fetchDoctorDetails();
@@ -325,26 +441,23 @@ const BookAppointment = () => {
 
   const handleSlotSelection = (slot) => {
     setSelectedSlot(slot);
-    setStep(2);
-    setShowPayment(true);
+    setStep(2); // Go to payment method selection
   };
 
   const handleBackToSelection = () => {
-    setShowPayment(false);
-    setStep(1);
+    setStep(1); // Back to slot selection
     setSelectedSlot(null);
   };
 
   const handlePaymentSuccess = () => {
-    setShowPayment(false);
     setSelectedSlot(null);
     setSelectedDate("");
-    setStep(3); // Success step
+    setStep(4); // Success step
     setTimeout(() => navigate("/dashboard"), 2000);
   };
 
   const handlePaymentCancel = () => {
-    setShowPayment(false);
+    setStep(1); // Back to slot selection
     setSelectedSlot(null);
   };
 
@@ -486,12 +599,31 @@ const BookAppointment = () => {
                 step === 2 ? "text-blue-600" : "text-gray-400"
               }`}
             >
+              Payment Method
+            </span>
+          </div>
+          <div className="w-8 h-1 bg-gray-200 mx-2 rounded-full" />
+          <div className="flex items-center">
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg ${
+                step >= 3
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-400"
+              }`}
+            >
+              3
+            </div>
+            <span
+              className={`mx-2 font-semibold ${
+                step === 3 ? "text-blue-600" : "text-gray-400"
+              }`}
+            >
               Payment
             </span>
           </div>
         </div>
         {/* Success Animation */}
-        {step === 3 && (
+        {step === 4 && (
           <div className="flex flex-col items-center justify-center py-24 animate-fade-in">
             <div className="bg-green-100 rounded-full p-6 mb-6">
               <svg
@@ -516,7 +648,7 @@ const BookAppointment = () => {
             </p>
           </div>
         )}
-        {step !== 3 && (
+        {step !== 4 && (
           <>
             <div className="mb-8">
               <button
@@ -527,7 +659,8 @@ const BookAppointment = () => {
                 Back to Doctors
               </button>
             </div>
-            {!showPayment ? (
+
+            {step === 1 && (
               <div className="bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6">
@@ -781,22 +914,38 @@ const BookAppointment = () => {
                       )}
                     </div>
                   </div>
-                  {/* Next Button for slot selection */}
-                  {/* <div className="flex justify-end mt-8">
-                    <button
-                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-xl font-semibold shadow-md hover:from-blue-700 hover:to-indigo-800 transition-all"
-                      onClick={() => setShowPayment(true)}
-                      disabled={!selectedSlot}
-                    >
-                      Next: Payment
-                    </button>
-                  </div> */}
                 </div>
               </div>
-            ) : (
-              <Elements stripe={stripePromise}>
+            )}
+
+            {step === 2 && (
+              <PaymentMethodSelection
+                doctor={doctor}
+                selectedSlot={selectedSlot}
+                selectedDate={selectedDate}
+                onSelect={(method) => {
+                  if (method === "stripe") {
+                    setStep(3);
+                  } else {
+                    // Handle other payment methods
+                    toast.success(
+                      `Appointment booked with ${method.replace(
+                        "_",
+                        " "
+                      )} payment!`
+                    );
+                    setStep(4);
+                    setTimeout(() => navigate("/dashboard"), 2000);
+                  }
+                }}
+                onBack={handleBackToSelection}
+              />
+            )}
+
+            {step === 3 && (
+              <div className="animate-fade-in">
                 {/* Payment Step Summary Card */}
-                <div className="mb-8 animate-fade-in">
+                <div className="mb-8">
                   <div className="bg-white rounded-xl shadow-lg border border-blue-100 p-6 flex flex-col md:flex-row items-center justify-between">
                     <div className="flex items-center mb-4 md:mb-0">
                       <FaCalendarAlt className="text-blue-600 text-2xl mr-3" />
@@ -834,14 +983,16 @@ const BookAppointment = () => {
                     </div>
                   </div>
                 </div>
-                <CheckoutForm
-                  doctor={doctor}
-                  selectedSlot={selectedSlot}
-                  selectedDate={selectedDate}
-                  onSuccess={handlePaymentSuccess}
-                  onCancel={handleBackToSelection}
-                />
-              </Elements>
+                <Elements stripe={stripePromise}>
+                  <CheckoutForm
+                    doctor={doctor}
+                    selectedSlot={selectedSlot}
+                    selectedDate={selectedDate}
+                    onSuccess={handlePaymentSuccess}
+                    onCancel={() => setStep(2)}
+                  />
+                </Elements>
+              </div>
             )}
           </>
         )}
