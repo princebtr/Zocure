@@ -1,6 +1,6 @@
 # Zoure Deployment
 
-[🌐 **Live Demo**](https://zoure-deplyment-git-main-prince-kumars-projects-c81d4932.vercel.app)
+[🌐 **Live Demo**](https://zocure.netlify.app/)
 
 [🔗 **Connect on LinkedIn**](https://www.linkedin.com/in/princebtr/)
 
