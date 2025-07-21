@@ -2,6 +2,8 @@
 
 [🌐 **Live Demo**](https://zoure-deplyment-git-main-prince-kumars-projects-c81d4932.vercel.app)
 
+[🔗 **Connect on LinkedIn**](https://www.linkedin.com/in/princebtr/)
+
 A full-stack Doctor Appointment Booking platform with role-based access for users, doctors, and admins.  
 Frontend built with **React + Vite** and Tailwind CSS.  
 Backend powered by **Node.js**, **Express**, and **MongoDB**.
@@ -57,7 +59,7 @@ Zoure-Deplyment/
 2. Go to [Vercel](https://vercel.com/), import your repo, and set the project root to `client`.
 3. Add environment variable:
    ```
-   VITE_API_URL=https://zoure-deplyment.onrender.com/api
+   VITE_API_URL="....not disclosing it"
    ```
 4. Deploy!
 
@@ -139,4 +141,4 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 
 ## 📄 License
 
-[MIT](LICENSE)
+This project is licensed under the [MIT License](LICENSE). You are free to use, modify, and distribute this project for personal or commercial purposes, provided that you give appropriate credit to the original author.
