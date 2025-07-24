@@ -138,7 +138,3 @@ npm run dev
 Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
 ---
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE). You are free to use, modify, and distribute this project for personal or commercial purposes, provided that you give appropriate credit to the original author.
